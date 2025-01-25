@@ -4,8 +4,8 @@ package com.roiocam.jsm.tools;
 import java.util.Iterator;
 import java.util.Map;
 
-import com.roiocam.jsm.json.JSONTools;
-import com.roiocam.jsm.json.JsonNode;
+import com.roiocam.jsm.facade.JSONNode;
+import com.roiocam.jsm.facade.JSONTools;
 import com.roiocam.jsm.schema.SchemaNode;
 
 public class SchemaParser {
@@ -28,7 +28,7 @@ public class SchemaParser {
      * @return The root schema.SchemaNode representing the schema structure.
      */
     public static SchemaNode parse(JSONTools tools, String json) {
-        JsonNode rootNode = tools.readTree(json);
+        JSONNode rootNode = tools.readTree(json);
         return parseNode(rootNode, null);
     }
 
@@ -38,7 +38,7 @@ public class SchemaParser {
      * @param node The current JsonNode to parse.
      * @return A schema.SchemaNode representing the structure of the JSON node.
      */
-    private static SchemaNode parseNode(JsonNode node, SchemaNode parent) {
+    private static SchemaNode parseNode(JSONNode node, SchemaNode parent) {
         if (node.isTextual()) {
             // Leaf node: resolve type
             String typeName = node.asText();
@@ -53,9 +53,9 @@ public class SchemaParser {
         if (node.isObject()) {
             // Object node: recursively parse children
             SchemaNode current = new SchemaNode(null, parent);
-            Iterator<Map.Entry<String, JsonNode>> fields = node.fields();
+            Iterator<Map.Entry<String, JSONNode>> fields = node.fields();
             while (fields.hasNext()) {
-                Map.Entry<String, JsonNode> field = fields.next();
+                Map.Entry<String, JSONNode> field = fields.next();
                 current.addChild(field.getKey(), parseNode(field.getValue(), current));
             }
             return current;

@@ -11,6 +11,7 @@
     <modules>
         <module>json-facade</module>
         <module>json-schema-mapping</module>
+        <module>facades</module>
     </modules>
     
     <properties>
@@ -21,6 +22,9 @@
         <junit-jupiter.version>5.10.3</junit-jupiter.version>
         <enforcer.version>3.4.1</enforcer.version>
         <spotless.version>2.44.2</spotless.version>
+        <fastjson.version>1.2.83</fastjson.version>
+        <jackson.version>2.16.2</jackson.version>
+        <auto-service.version>1.1.1</auto-service.version>
     </properties>
     
     <dependencyManagement>
@@ -36,9 +40,36 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
+                <groupId>com.roiocam</groupId>
+                <artifactId>json-facade-jackson</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.roiocam</groupId>
+                <artifactId>json-facade-fastjson</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>com.jayway.jsonpath</groupId>
                 <artifactId>json-path</artifactId>
                 <version>${json-path.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>fastjson</artifactId>
+                <version>${fastjson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${jackson.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.google.auto.service</groupId>
+                <artifactId>auto-service</artifactId>
+                <version>${auto-service.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.junit.jupiter</groupId>

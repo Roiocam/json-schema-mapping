@@ -1,15 +1,15 @@
 /* (C)2025 */
-package com.roiocam.jsm.json;
+package com.roiocam.jsm.facade;
 
 import java.util.Iterator;
 import java.util.Map;
 
-public interface JsonNode {
+public interface JSONNode {
     boolean isTextual();
 
     String asText();
 
     boolean isObject();
 
-    Iterator<Map.Entry<String, JsonNode>> fields();
+    Iterator<Map.Entry<String, JSONNode>> fields();
 }
