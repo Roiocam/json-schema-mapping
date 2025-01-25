@@ -3,8 +3,8 @@ package com.roiocam.jsm.schema;
 
 public class SchemaValue extends Schema<String> {
 
-    public SchemaValue(Object value) {
-        super(valid(value));
+    public SchemaValue(Object value, Schema<?> parent) {
+        super(check(value), parent);
     }
 
     @Override
@@ -12,7 +12,7 @@ public class SchemaValue extends Schema<String> {
         return value;
     }
 
-    private static String valid(Object value) {
+    private static String check(Object value) {
         if (!(value instanceof String)) {
             throw new IllegalArgumentException("invalid schema value");
         }

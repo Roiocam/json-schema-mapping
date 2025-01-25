@@ -14,7 +14,7 @@ public class SchemaGenerator {
      * @return a schema.SchemaNode representing the schema
      */
     public static SchemaNode generateSchema(Object obj) {
-        return processObject(obj);
+        return processObject(obj, null);
     }
 
     /**
@@ -23,8 +23,8 @@ public class SchemaGenerator {
      * @param obj the object to process
      * @return a schema.SchemaNode representing the object
      */
-    private static SchemaNode processObject(Object obj) {
-        SchemaNode schemaNode = new SchemaNode(obj.getClass());
+    private static SchemaNode processObject(Object obj, SchemaNode parent) {
+        SchemaNode current = new SchemaNode(obj.getClass(), parent);
         Field[] fields = obj.getClass().getDeclaredFields();
 
         for (Field field : fields) {
@@ -35,21 +35,22 @@ public class SchemaGenerator {
 
                 if (isPrimitiveOrWrapper(fieldType) || fieldType == String.class) {
                     // Primitive or string types
-                    schemaNode.addChild(field.getName(), new SchemaNode(fieldType));
+                    current.addChild(field.getName(), new SchemaNode(fieldType, current));
                 } else {
                     // Nested object
                     SchemaNode childSchema =
                             processObject(
                                     value != null
                                             ? value
-                                            : fieldType.getDeclaredConstructor().newInstance());
-                    schemaNode.addChild(field.getName(), childSchema);
+                                            : fieldType.getDeclaredConstructor().newInstance(),
+                                    current);
+                    current.addChild(field.getName(), childSchema);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-        return schemaNode;
+        return current;
     }
 
     /**

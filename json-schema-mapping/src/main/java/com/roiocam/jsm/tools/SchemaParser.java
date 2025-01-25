@@ -26,11 +26,10 @@ public class SchemaParser {
      *
      * @param json The JSON string representing the schema.
      * @return The root schema.SchemaNode representing the schema structure.
-     * @throws Exception If JSON parsing or schema construction fails.
      */
-    public static SchemaNode parse(JSONTools tools, String json) throws Exception {
+    public static SchemaNode parse(JSONTools tools, String json) {
         JsonNode rootNode = tools.readTree(json);
-        return parseNode(rootNode);
+        return parseNode(rootNode, null);
     }
 
     /**
@@ -39,7 +38,7 @@ public class SchemaParser {
      * @param node The current JsonNode to parse.
      * @return A schema.SchemaNode representing the structure of the JSON node.
      */
-    private static SchemaNode parseNode(JsonNode node) {
+    private static SchemaNode parseNode(JsonNode node, SchemaNode parent) {
         if (node.isTextual()) {
             // Leaf node: resolve type
             String typeName = node.asText();
@@ -48,18 +47,18 @@ public class SchemaParser {
             if (type == null) {
                 throw new IllegalArgumentException("Unknown type: " + typeName);
             }
-            return new SchemaNode(type);
+            return new SchemaNode(type, parent);
         }
 
         if (node.isObject()) {
             // Object node: recursively parse children
-            SchemaNode schemaNode = new SchemaNode(null);
+            SchemaNode current = new SchemaNode(null, parent);
             Iterator<Map.Entry<String, JsonNode>> fields = node.fields();
             while (fields.hasNext()) {
                 Map.Entry<String, JsonNode> field = fields.next();
-                schemaNode.addChild(field.getKey(), parseNode(field.getValue()));
+                current.addChild(field.getKey(), parseNode(field.getValue(), current));
             }
-            return schemaNode;
+            return current;
         }
 
         throw new IllegalArgumentException("Unsupported JSON structure: " + node);

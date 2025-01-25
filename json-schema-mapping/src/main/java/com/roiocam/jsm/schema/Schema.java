@@ -15,18 +15,14 @@ public abstract class Schema<T> {
     /**
      * Parent schema, used for reverse parse
      */
-    private Schema<T> parent;
+    private Schema<?> parent;
 
     /**
      * Maintains the tree structure of the JSON schema
      */
     private Map<String, Schema<T>> children;
 
-    public Schema(T value) {
-        this(value, null);
-    }
-
-    public Schema(T value, Schema<T> parent) {
+    public Schema(T value, Schema<?> parent) {
         this.value = value;
         this.parent = parent;
         this.children = new HashMap<>();
@@ -36,11 +32,18 @@ public abstract class Schema<T> {
         return value;
     }
 
-    public Schema<T> getParent() {
+    public Schema<?> getParent() {
         return parent;
     }
 
     public abstract String getValueAsString(T value);
+
+    private String getValueAsFullString(T value) {
+        if (value instanceof Class<?>) {
+            return ((Class<?>) value).getName();
+        }
+        return value.toString();
+    }
 
     public Map<String, Schema<T>> getChildren() {
         return children;
@@ -54,33 +57,32 @@ public abstract class Schema<T> {
      * Custom serialization logic to output the desired JSON format.
      */
     public Object toSerializableFormat() {
-        Map<String, Object> result = new LinkedHashMap<>();
 
-        if (parent == null) {
-            // Root node: Include the "type" key for the root class
-            result.put("type", getRootTypeAsString());
+        // Leaf node: return the type as a simple string
+        if (parent != null && this.children.isEmpty()) {
+            return this.getValueAsString(this.value);
         }
 
-        if (this.children.isEmpty()) {
-            // Leaf node: return the type as a simple string
-            result.put("value", this.getValueAsString(this.value));
-        } else {
+        Map<String, Object> result = new LinkedHashMap<>();
+        if (parent == null) {
+            this.writeRootType(result);
+        }
+
+        if (!this.children.isEmpty()) {
             // Nested node: recursively serialize children
             for (Map.Entry<String, Schema<T>> entry : this.children.entrySet()) {
                 result.put(entry.getKey(), entry.getValue().toSerializableFormat());
             }
         }
+
         return result;
     }
 
     /**
-     * Return the full class name of the root type.
-     * This is used when the current node is the top-level (root) node.
+     * Root node: Include the "type" key for the root class
      */
-    private String getRootTypeAsString() {
-        if (parent == null) {
-            return this.getClass().getName(); // Return the full class name (with package)
-        }
-        return "No root type"; // Root node should have no parent
+    protected void writeRootType(Map<String, Object> result) {
+        String typeName = this.getValueAsFullString(this.value);
+        result.put("type", typeName);
     }
 }

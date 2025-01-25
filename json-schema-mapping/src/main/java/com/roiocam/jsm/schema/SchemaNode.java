@@ -5,8 +5,8 @@ import java.util.Map;
 
 public class SchemaNode extends Schema<Class<?>> {
 
-    public SchemaNode(Class<?> value) {
-        super(value);
+    public SchemaNode(Class<?> value, Schema<Class<?>> parent) {
+        super(value, parent);
     }
 
     @Override
@@ -21,11 +21,11 @@ public class SchemaNode extends Schema<Class<?>> {
      */
     public SchemaExample generateExample() {
         if (this.getChildren().isEmpty()) {
-            return new SchemaExample();
+            return new SchemaExample(this.getParent());
         }
 
         // Nested node: recursively generate example for children
-        SchemaExample example = new SchemaExample();
+        SchemaExample example = new SchemaExample(this.getParent());
         for (Map.Entry<String, Schema<Class<?>>> entry : this.getChildren().entrySet()) {
             example.addChild(entry.getKey(), ((SchemaNode) entry.getValue()).generateExample());
         }
