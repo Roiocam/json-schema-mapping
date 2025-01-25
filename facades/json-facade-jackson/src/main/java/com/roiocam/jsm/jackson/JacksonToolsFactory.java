@@ -1,7 +1,9 @@
 /* (C)2025 */
 package com.roiocam.jsm.jackson;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.auto.service.AutoService;
 import com.roiocam.jsm.facade.JSONTools;
 import com.roiocam.jsm.facade.JSONToolsFactories;
@@ -16,7 +18,10 @@ public class JacksonToolsFactory implements JSONToolsFactory, Comparable<JSONToo
 
     @Override
     public JSONTools create() {
-        return new JacksonTools(new ObjectMapper());
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        objectMapper.configure(SerializationFeature.WRITE_NULL_MAP_VALUES, false);
+        return new JacksonTools(objectMapper);
     }
 
     @Override

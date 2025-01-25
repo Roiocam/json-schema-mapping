@@ -10,8 +10,13 @@ public class SchemaNode extends Schema<Class<?>> {
     }
 
     @Override
-    public String getValueAsString(Class<?> value) {
-        return value.getSimpleName().toLowerCase();
+    public Class<?> getValue() {
+        return super.getValue();
+    }
+
+    @Override
+    public Object getSerializableValue(Class<?> value) {
+        return SchemaTypeMetadata.fromClass(value).getType();
     }
 
     /**

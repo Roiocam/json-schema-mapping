@@ -1,25 +1,21 @@
 /* (C)2025 */
 package com.roiocam.jsm.schema;
 
-public class SchemaValue extends Schema<String> {
+import java.util.Map;
 
-    public SchemaValue(Object value, Schema<?> parent) {
-        super(check(value), parent);
+public class SchemaValue<T> extends Schema<T> {
+
+    public SchemaValue(T value, Schema<?> parent) {
+        super(value, parent);
     }
 
     @Override
-    public String getValueAsString(String value) {
+    public Object getSerializableValue(T value) {
         return value;
     }
 
-    private static String check(Object value) {
-        if (!(value instanceof String)) {
-            throw new IllegalArgumentException("invalid schema value");
-        }
-        String strVal = (String) value;
-        if (strVal.startsWith("$.") && strVal.length() > 2) {
-            return strVal;
-        }
-        throw new IllegalArgumentException("invalid schema value");
+    @Override
+    protected void writeRootType(Map<String, Object> result) {
+        // No root type for example
     }
 }

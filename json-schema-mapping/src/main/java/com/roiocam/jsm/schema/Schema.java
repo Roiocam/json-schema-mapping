@@ -36,14 +36,7 @@ public abstract class Schema<T> {
         return parent;
     }
 
-    public abstract String getValueAsString(T value);
-
-    private String getValueAsFullString(T value) {
-        if (value instanceof Class<?>) {
-            return ((Class<?>) value).getName();
-        }
-        return value.toString();
-    }
+    public abstract Object getSerializableValue(T value);
 
     public Map<String, Schema<T>> getChildren() {
         return children;
@@ -60,7 +53,7 @@ public abstract class Schema<T> {
 
         // Leaf node: return the type as a simple string
         if (parent != null && this.children.isEmpty()) {
-            return this.getValueAsString(this.value);
+            return this.getSerializableValue(this.value);
         }
 
         Map<String, Object> result = new LinkedHashMap<>();
@@ -82,7 +75,14 @@ public abstract class Schema<T> {
      * Root node: Include the "type" key for the root class
      */
     protected void writeRootType(Map<String, Object> result) {
-        String typeName = this.getValueAsFullString(this.value);
+        String typeName;
+        if (value == null) {
+            typeName = null;
+        } else if (value instanceof Class<?>) {
+            typeName = ((Class<?>) value).getName();
+        } else {
+            typeName = value.toString();
+        }
         result.put("type", typeName);
     }
 }
