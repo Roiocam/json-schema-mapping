@@ -2,19 +2,18 @@
 package com.roiocam.jsm.tools;
 
 import com.roiocam.jsm.facade.JSONTools;
-import com.roiocam.jsm.facade.JSONToolsFactories;
 import com.roiocam.jsm.schema.SchemaExample;
 import com.roiocam.jsm.schema.SchemaNode;
 import com.roiocam.jsm.schema.SchemaPath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-class SchemaParserTest {
+abstract class SchemaParserTest {
+    abstract JSONTools createTools();
 
     @Test
     public void test() {
-
-        JSONTools tools = JSONToolsFactories.create();
+        JSONTools tools = createTools();
         String schemaJson =
                 """
         {

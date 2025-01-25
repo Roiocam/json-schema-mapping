@@ -2,7 +2,6 @@
 package com.roiocam.jsm.tools;
 
 import com.roiocam.jsm.facade.JSONTools;
-import com.roiocam.jsm.jackson.JacksonToolsFactory;
 import com.roiocam.jsm.schema.SchemaExample;
 import com.roiocam.jsm.schema.SchemaNode;
 import com.roiocam.jsm.schema.SchemaPath;
@@ -10,10 +9,13 @@ import com.roiocam.jsm.schema.SchemaValue;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-class SchemaOperatorTest {
+abstract class SchemaOperatorTest {
+
+    abstract JSONTools createTools();
+
     @Test
     public void test() {
-        JSONTools tools = new JacksonToolsFactory().create();
+        JSONTools tools = createTools();
         // Generate schema
         SchemaNode schema = SchemaOperator.generateSchema(User.class);
         // Serialize schema to JSON

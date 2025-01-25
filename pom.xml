@@ -7,12 +7,35 @@
     <artifactId>jsm-parent</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
+    <url>https://github.com/Roiocam/json-schema-mapping/</url>
+    <inceptionYear>2025</inceptionYear>
     
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    
+    <developers>
+        <developer>
+            <id>roiocam</id>
+            <name>Jingzhang Chen</name>
+            <email>roiocam@apache.org</email>
+            <organization>io.github.roiocam</organization>
+        </developer>
+    </developers>
     <modules>
         <module>json-facade</module>
         <module>json-schema-mapping</module>
         <module>facades</module>
     </modules>
+    
+    <scm>
+        <connection>git@github.com:Roiocam/json-schema-mapping.git</connection>
+        <url>https://github.com/Roiocam/json-schema-mapping/</url>
+    </scm>
     
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -207,6 +230,45 @@
                 <extensions>true</extensions>
                 <configuration>
                     <publishingServerId>sonatype-releases</publishingServerId>
+                </configuration>
+            </plugin>
+            <!-- Maven Source Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>3.2.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            
+            <!-- Maven Javadoc Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.4.0</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            
+            <!-- Maven Deploy Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>3.0.0-M1</version>
+                <configuration>
+                    <skip>false</skip>
                 </configuration>
             </plugin>
         </plugins>

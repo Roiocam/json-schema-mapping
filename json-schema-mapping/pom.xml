@@ -25,6 +25,11 @@
             <artifactId>json-facade-jackson</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>io.github.roiocam</groupId>
+            <artifactId>json-facade-fastjson</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     
 </project>
