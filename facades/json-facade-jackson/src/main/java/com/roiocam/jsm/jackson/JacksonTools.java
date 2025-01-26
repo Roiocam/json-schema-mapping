@@ -26,9 +26,9 @@ public class JacksonTools implements JSONTools {
     @Override
     public String writeTree(JSONNode node) {
         if (node instanceof JacksonNode) {
-            return ((JacksonNode) node).getNode().toPrettyString();
+            return ((JacksonNode) node).getNode().toString();
         }
-        return this.writeValueAsString(node, true);
+        return this.writeValueAsString(node, false);
     }
 
     @Override

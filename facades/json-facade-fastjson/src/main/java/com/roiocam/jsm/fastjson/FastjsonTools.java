@@ -15,7 +15,10 @@ public class FastjsonTools implements JSONTools {
 
     @Override
     public String writeTree(JSONNode node) {
-        return "";
+        if (node instanceof FastjsonNode) {
+            return ((FastjsonNode) node).getJsonObject().toJSONString();
+        }
+        return writeValueAsString(node, false);
     }
 
     @Override

@@ -13,7 +13,6 @@ abstract class SchemaParserTest {
 
     @Test
     public void test() {
-        JSONTools tools = createTools();
         String schemaJson =
                 """
         {
@@ -26,12 +25,13 @@ abstract class SchemaParserTest {
         """;
 
         // Parse the schema JSON into a schema.SchemaNode
-        SchemaNode schemaNode = SchemaParser.parseNode(tools, schemaJson);
+        SchemaNode schemaNode = SchemaParser.parseNode(createTools(), schemaJson);
 
         Assertions.assertNotNull(schemaNode);
         Object nodeSerializableFormat = schemaNode.toSerializableFormat();
         Assertions.assertEquals(
-                schemaJson.trim(), tools.writeValueAsString(nodeSerializableFormat, true).trim());
+                createTools().writeTree(createTools().readTree(schemaJson)),
+                createTools().writeValueAsString(nodeSerializableFormat));
 
         // Generate Example JSON from schema.SchemaNode
         System.out.println("Example JSON:");
@@ -39,7 +39,8 @@ abstract class SchemaParserTest {
 
         // Serialize Example JSON
         Object exampleJsonSerializableFormat = exampleJson.toSerializableFormat();
-        String exampleJsonString = tools.writeValueAsString(exampleJsonSerializableFormat, true);
+        String exampleJsonString =
+                createTools().writeValueAsString(exampleJsonSerializableFormat, true);
         System.out.println(exampleJsonString);
 
         String schemaPathJson =
@@ -52,11 +53,12 @@ abstract class SchemaParserTest {
                   "token" : "$.token"
                 }
                 """;
-        SchemaPath schemaPath = SchemaParser.parsePath(tools, schemaPathJson);
+        SchemaPath schemaPath = SchemaParser.parsePath(createTools(), schemaPathJson);
         Assertions.assertNotNull(schemaPath);
 
         Object pathSerializableForm = schemaPath.toSerializableFormat();
         Assertions.assertEquals(
-                schemaPathJson.trim(), tools.writeValueAsString(pathSerializableForm, true).trim());
+                createTools().writeTree(createTools().readTree(schemaPathJson)),
+                createTools().writeValueAsString(pathSerializableForm));
     }
 }

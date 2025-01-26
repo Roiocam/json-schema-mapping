@@ -15,6 +15,10 @@ public class FastjsonNode implements JSONNode {
         this.jsonObject = jsonObject;
     }
 
+    public JSONObject getJsonObject() {
+        return jsonObject;
+    }
+
     @Override
     public boolean isTextual() {
         return false;
@@ -22,7 +26,7 @@ public class FastjsonNode implements JSONNode {
 
     @Override
     public String asText() {
-        return "";
+        throw new IllegalStateException("Fastjson node can not be textual, it is always map");
     }
 
     @Override
@@ -55,6 +59,6 @@ public class FastjsonNode implements JSONNode {
 
     @Override
     public String asValue() {
-        return "";
+        throw new IllegalStateException("Fastjson node can not be value, it is always map");
     }
 }

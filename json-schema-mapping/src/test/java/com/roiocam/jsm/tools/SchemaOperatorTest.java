@@ -36,7 +36,8 @@ abstract class SchemaOperatorTest {
                 {
                   "user" : {
                     "name" : "$.username",
-                    "age" : "$.profile.age"
+                    "age" : "$.profile.age",
+                    "email": "$.profile.email"
                   },
                   "token" : "$.token"
                 }
@@ -52,7 +53,8 @@ abstract class SchemaOperatorTest {
                     "username": "John",
                     "profile": {
                         "displayName": "John Ivy",
-                        "age": 30
+                        "age": 30,
+                        "email": "john.ivy@example.com"
                     }
                 }
                 """;
@@ -63,14 +65,16 @@ abstract class SchemaOperatorTest {
                 {
                   "user" : {
                     "name" : "John",
-                    "age" : 30
+                    "age" : 30,
+                    "email": "john.ivy@example.com"
                   },
                   "token" : "abc123"
                 }
                 """;
 
-        String valueJson = tools.writeValueAsString(valueSerializableFormat, true);
-        Assertions.assertEquals(expectedJson.trim(), valueJson.trim());
+        Assertions.assertEquals(
+                createTools().writeTree(createTools().readTree(expectedJson)),
+                createTools().writeValueAsString(valueSerializableFormat));
 
         User user = SchemaOperator.evaluateObject(schema, schemaPath, parseJson, User.class);
         Assertions.assertNotNull(user);
