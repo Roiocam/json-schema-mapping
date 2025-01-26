@@ -1,6 +1,8 @@
 /* (C)2025 */
 package com.roiocam.jsm.tools;
 
+import java.util.Map;
+
 import com.roiocam.jsm.facade.JSONNode;
 import com.roiocam.jsm.facade.JSONTools;
 import com.roiocam.jsm.schema.SchemaNode;
@@ -49,7 +51,7 @@ abstract class ITTest {
         // 3. verify the SchemaPath is match to the SchemaNode
         Assertions.assertTrue(SchemaOperator.schemaMatch(schema, path));
 
-        // 4.giving the outer json string, using the schema and schema path to parse the value
+        // 4.giving the outer json string, using the schema and schema path to evaluate the value
         String outerJson =
                 """
                 {
@@ -66,15 +68,47 @@ abstract class ITTest {
         System.out.println(createTools().writeTree(jsonNode));
         divider();
 
-        SchemaValue value = SchemaOperator.parseValue(schema, path, outerJson);
-        System.out.println("Parsed Value:");
+        SchemaValue value = SchemaOperator.evaluateValue(schema, path, outerJson);
+        System.out.println("Evaluate Value:");
         System.out.println(createTools().writeValueAsString(value.toSerializableFormat(), true));
         divider();
 
-        // 6. parse the value to a Java object
-        User user = SchemaOperator.parseObject(schema, path, outerJson, User.class);
-        System.out.println("Parsed Object:");
+        // 6. evaluate the value to a Java object
+        User user = SchemaOperator.evaluateObject(schema, path, outerJson, User.class);
+        System.out.println("Evaluate Object:");
         System.out.println(createTools().writeValueAsString(user, true));
+        divider();
+
+        // 7. parse a JSON string to a SchemaValue
+        String parseJson =
+                """
+                {
+                    "token" : "123456",
+                    "user" : {
+                        "name" : "John",
+                        "age" : 30,
+                        "email" : "jacky.chen@example.com"
+                    }
+                }
+                """;
+        SchemaValue<?> parsedValue = SchemaParser.parseValue(createTools(), parseJson);
+        Assertions.assertNotNull(parsedValue);
+        System.out.println("Parsed Value:");
+        System.out.println(
+                createTools().writeValueAsString(parsedValue.toSerializableFormat(), true));
+        divider();
+
+        // 8. flatten the key map
+        Map<String, String> flattenKey = schema.toFlattenKeyMap();
+        System.out.println("Flatten Key:");
+        System.out.println(createTools().writeValueAsString(flattenKey, true));
+        divider();
+
+        // 9. flatten the key map with prefix
+        SchemaNode flattenSchema = SchemaParser.parseFlattenKey(flattenKey);
+        System.out.println("Flatten Schema:");
+        System.out.println(
+                createTools().writeValueAsString(flattenSchema.toSerializableFormat(), true));
         divider();
     }
 

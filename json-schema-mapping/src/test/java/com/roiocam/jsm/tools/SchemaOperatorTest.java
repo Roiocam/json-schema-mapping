@@ -56,7 +56,7 @@ abstract class SchemaOperatorTest {
                     }
                 }
                 """;
-        SchemaValue schemaValue = SchemaOperator.parseValue(schema, schemaPath, parseJson);
+        SchemaValue schemaValue = SchemaOperator.evaluateValue(schema, schemaPath, parseJson);
         Object valueSerializableFormat = schemaValue.toSerializableFormat();
         String expectedJson =
                 """
@@ -72,7 +72,7 @@ abstract class SchemaOperatorTest {
         String valueJson = tools.writeValueAsString(valueSerializableFormat, true);
         Assertions.assertEquals(expectedJson.trim(), valueJson.trim());
 
-        User user = SchemaOperator.parseObject(schema, schemaPath, parseJson, User.class);
+        User user = SchemaOperator.evaluateObject(schema, schemaPath, parseJson, User.class);
         Assertions.assertNotNull(user);
         Assertions.assertEquals("abc123", user.getToken());
         Assertions.assertNotNull(user.getUser());

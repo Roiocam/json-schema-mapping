@@ -2,7 +2,7 @@
 
 A simple tool for mapping JSON with different structures based on JSON Path.
 
-```json
+```
 ---------------------------------------------------------------------------------------------------------
 Schema:                                                  |  Schema Example:
 {                                                        |  {
@@ -15,7 +15,7 @@ Schema:                                                  |  Schema Example:
     "token" : "string"                                   |  }            
 }                                                        |
 ---------------------------------------------------------------------------------------------------------
-Difference Structure:                                    |  Mapping Path:             
+Example Value:                                           |  Schema Path:             
 {                                                        |  {
   "username" : "John",                                   |      "user" : {                     
   "profile" : {                                          |          "name" : "$.username",              
@@ -25,7 +25,7 @@ Difference Structure:                                    |  Mapping Path:
   "token" : "123456"                                     |      "token" : "$.token"                   
 }                                                        |  }
 ---------------------------------------------------------------------------------------------------------
-Parsed Value:                                            |  Parsed Object:            
+Schema Value:                                            |  Parsed Object:            
 {                                                        |  {
     "user" : {                                           |      "token" : "123456",             
         "name" : "John",                                 |      "user" : {                       
@@ -35,5 +35,13 @@ Parsed Value:                                            |  Parsed Object:
     "token" : "123456"                                   |      }                     
 }                                                        |  }
 ---------------------------------------------------------------------------------------------------------
-
+// TODO
+Flatten Key List:                                        |  Mapping Key List:                        
+[                                                        |  [
+    "user.name",                                         |      "username"                                                    
+    "user.age",                                          |      "profile.age",              
+    "user.email",                                        |      "profile.email",               
+    "token"                                              |      "token"          
+]                                                        |  ]
+---------------------------------------------------------------------------------------------------------
 ```

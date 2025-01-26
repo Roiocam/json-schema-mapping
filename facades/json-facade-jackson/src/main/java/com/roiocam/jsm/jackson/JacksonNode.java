@@ -64,4 +64,48 @@ public class JacksonNode implements JSONNode {
             }
         };
     }
+
+    @Override
+    public boolean isValue() {
+        return node.isValueNode();
+    }
+
+    @Override
+    public <T> T asValue() {
+        switch (node.getNodeType()) {
+            case NULL -> {
+                return null;
+            }
+            case BOOLEAN -> {
+                return (T) Boolean.valueOf(node.asBoolean());
+            }
+            case NUMBER -> {
+                if (node.isInt() || node.isIntegralNumber()) {
+                    return (T) Integer.valueOf(node.asInt());
+                } else if (node.isLong()) {
+                    return (T) Long.valueOf(node.asLong());
+                } else if (node.isDouble()) {
+                    return (T) Double.valueOf(node.asDouble());
+                } else if (node.isBigDecimal()) {
+                    return (T) node.decimalValue();
+                } else if (node.isBigInteger()) {
+                    return (T) node.bigIntegerValue();
+                } else {
+                    throw new UnsupportedOperationException(
+                            "Unsupported number type: " + node.numberType());
+                }
+            }
+            case STRING -> {
+                return (T) node.asText();
+            }
+            case ARRAY ->
+            // TODO: implement array
+            throw new UnsupportedOperationException("Array not supported");
+            case OBJECT ->
+            // TODO: implement object
+            throw new UnsupportedOperationException("Object not supported");
+            default -> throw new UnsupportedOperationException(
+                    "Unsupported value type: " + node.getNodeType());
+        }
+    }
 }

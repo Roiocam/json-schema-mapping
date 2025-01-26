@@ -34,7 +34,7 @@ public class SchemaOperator {
      * @param json               the JSON string
      * @return
      */
-    public static SchemaValue parseValue(SchemaNode schema, SchemaPath path, String json) {
+    public static SchemaValue evaluateValue(SchemaNode schema, SchemaPath path, String json) {
         ReadContext ctx = JsonPath.parse(json);
         return processSchema(schema, path, ctx);
     }
@@ -48,7 +48,7 @@ public class SchemaOperator {
      * @return
      * @param <T>
      */
-    public static <T> T parseObject(
+    public static <T> T evaluateObject(
             SchemaNode schema, SchemaPath path, String json, Class<T> clazz) {
         ReadContext ctx = JsonPath.parse(json);
         return processObject(schema, path, ctx, clazz);

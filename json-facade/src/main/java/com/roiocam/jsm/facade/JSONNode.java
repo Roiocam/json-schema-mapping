@@ -12,4 +12,8 @@ public interface JSONNode {
     boolean isObject();
 
     Iterator<Map.Entry<String, JSONNode>> fields();
+
+    boolean isValue();
+
+    <T> T asValue();
 }

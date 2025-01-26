@@ -32,4 +32,14 @@ public class TextNode implements JSONNode {
     public Iterator<Map.Entry<String, JSONNode>> fields() {
         return null;
     }
+
+    @Override
+    public boolean isValue() {
+        return false;
+    }
+
+    @Override
+    public String asValue() {
+        return value;
+    }
 }

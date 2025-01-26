@@ -47,4 +47,14 @@ public class FastjsonNode implements JSONNode {
                                         }));
         return collect.entrySet().iterator();
     }
+
+    @Override
+    public boolean isValue() {
+        return false;
+    }
+
+    @Override
+    public String asValue() {
+        return "";
+    }
 }

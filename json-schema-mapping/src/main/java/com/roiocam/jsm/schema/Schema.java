@@ -1,6 +1,7 @@
 /* (C)2025 */
 package com.roiocam.jsm.schema;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -68,6 +69,41 @@ public abstract class Schema<T> {
             }
         }
 
+        return result;
+    }
+
+    public Map<String, String> toFlattenKeyMap() {
+        return this.toFlattenKeyMap(null);
+    }
+
+    private Map<String, String> toFlattenKeyMap(String parentKey) {
+
+        // Leaf node: return the type as a simple string
+        if (parent != null && this.children.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        Map<String, String> result = new HashMap<>();
+        if (!this.children.isEmpty()) {
+            // Nested node: recursively serialize children
+            for (Map.Entry<String, Schema<T>> entry : this.children.entrySet()) {
+                Schema<T> entryValue = entry.getValue();
+                Map<String, String> flattenKeyMap = entryValue.toFlattenKeyMap(entry.getKey());
+                if (flattenKeyMap.isEmpty()) {
+                    String value = null;
+                    if (entryValue.getValue() != null) {
+                        value = entryValue.getSerializableValue(entryValue.getValue()).toString();
+                    }
+                    if (parentKey == null) {
+                        result.put(entry.getKey(), value);
+                    } else {
+                        result.put(parentKey + "." + entry.getKey(), value);
+                    }
+                } else {
+                    result.putAll(flattenKeyMap);
+                }
+            }
+        }
         return result;
     }
 
