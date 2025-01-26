@@ -108,4 +108,25 @@ public class JacksonNode implements JSONNode {
                     "Unsupported value type: " + node.getNodeType());
         }
     }
+
+    @Override
+    public boolean isArray() {
+        return node.isArray();
+    }
+
+    @Override
+    public Iterator<JSONNode> elements() {
+        Iterator<JsonNode> elements = node.elements();
+        return new Iterator<JSONNode>() {
+            @Override
+            public boolean hasNext() {
+                return elements.hasNext();
+            }
+
+            @Override
+            public JSONNode next() {
+                return new JacksonNode(elements.next());
+            }
+        };
+    }
 }

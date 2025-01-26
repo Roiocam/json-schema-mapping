@@ -5,6 +5,7 @@ import com.roiocam.jsm.facade.JSONTools;
 import com.roiocam.jsm.schema.SchemaExample;
 import com.roiocam.jsm.schema.SchemaNode;
 import com.roiocam.jsm.schema.SchemaPath;
+import com.roiocam.jsm.schema.SchemaValue;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -60,5 +61,37 @@ abstract class SchemaParserTest {
         Assertions.assertEquals(
                 createTools().writeTree(createTools().readTree(schemaPathJson)),
                 createTools().writeValueAsString(pathSerializableForm));
+    }
+
+    @Test
+    public void support_all_type_of_json() {
+        String schemaJson =
+                """
+    {
+      "string": "example",
+      "number": 123,
+      "boolean": true,
+      "null": null,
+      "object": {
+        "nestedString": "nestedExample",
+        "nestedNumber": 456
+      },
+      "array": [
+        "item1",
+        789,
+        false,
+        null,
+        {
+          "nestedObjectInArray": "value"
+        }
+      ]
+    }
+        """;
+
+        SchemaValue schemaNode = SchemaParser.parseValue(createTools(), schemaJson);
+        Assertions.assertNotNull(schemaNode);
+        System.out.println("Example JSON:");
+        Object exampleJsonSerializableFormat = schemaNode.toSerializableFormat();
+        System.out.println(createTools().writeValueAsString(exampleJsonSerializableFormat, true));
     }
 }

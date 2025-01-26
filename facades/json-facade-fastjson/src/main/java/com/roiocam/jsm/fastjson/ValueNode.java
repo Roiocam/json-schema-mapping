@@ -6,21 +6,21 @@ import java.util.Map;
 
 import com.roiocam.jsm.facade.JSONNode;
 
-public class TextNode implements JSONNode {
-    private final String value;
+public class ValueNode implements JSONNode {
+    private final Object object;
 
-    public TextNode(String value) {
-        this.value = value;
+    public ValueNode(Object object) {
+        this.object = object;
     }
 
     @Override
     public boolean isTextual() {
-        return true;
+        return false;
     }
 
     @Override
     public String asText() {
-        return value;
+        throw new IllegalStateException("ValueNode is not an textual");
     }
 
     @Override
@@ -30,17 +30,17 @@ public class TextNode implements JSONNode {
 
     @Override
     public Iterator<Map.Entry<String, JSONNode>> fields() {
-        throw new IllegalStateException("TextNode is not an object");
+        throw new IllegalStateException("ValueNode is not an object");
     }
 
     @Override
     public boolean isValue() {
-        return false;
+        return true;
     }
 
     @Override
-    public String asValue() {
-        return value;
+    public <T> T asValue() {
+        return (T) object;
     }
 
     @Override
@@ -50,6 +50,6 @@ public class TextNode implements JSONNode {
 
     @Override
     public Iterator<JSONNode> elements() {
-        throw new IllegalStateException("TextNode is not an array");
+        throw new IllegalStateException("ValueNode is not an array");
     }
 }

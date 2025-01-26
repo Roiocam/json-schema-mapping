@@ -62,7 +62,7 @@ public class SchemaParser {
     }
 
     /**
-     * Parses a JSON structure into a {@link SchemaPath}.
+     * Parses a JSON structure into a {@link SchemaValue}.
      *
      * @param json The JSON string representing the schema.
      * @return The root schema.SchemaNode representing the schema structure.
@@ -91,6 +91,17 @@ public class SchemaParser {
         if (node.isValue()) {
             // Leaf node: resolve type
             return constructor.apply(node.asValue(), parent);
+        }
+
+        if (node.isArray()) {
+            // Array node: recursively parse children
+            T current = constructor.apply(null, parent);
+            Iterator<JSONNode> elements = node.elements();
+            while (elements.hasNext()) {
+                JSONNode element = elements.next();
+                current.addChild(null, parseSchema(element, current, constructor));
+            }
+            return current;
         }
 
         if (node.isObject()) {

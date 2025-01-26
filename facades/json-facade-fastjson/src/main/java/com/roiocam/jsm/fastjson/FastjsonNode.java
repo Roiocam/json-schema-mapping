@@ -5,17 +5,19 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.roiocam.jsm.facade.JSONNode;
 
 public class FastjsonNode implements JSONNode {
-    private final JSONObject jsonObject;
+    private final JSON jsonObject;
 
-    public FastjsonNode(JSONObject jsonObject) {
+    public FastjsonNode(JSON jsonObject) {
         this.jsonObject = jsonObject;
     }
 
-    public JSONObject getJsonObject() {
+    public JSON getJsonObject() {
         return jsonObject;
     }
 
@@ -31,30 +33,45 @@ public class FastjsonNode implements JSONNode {
 
     @Override
     public boolean isObject() {
-        return true;
+        return jsonObject instanceof JSONObject;
     }
 
     @Override
     public Iterator<Map.Entry<String, JSONNode>> fields() {
         Map<String, JSONNode> collect =
-                jsonObject.entrySet().stream()
-                        .collect(
-                                Collectors.toMap(
-                                        e -> e.getKey(),
-                                        e -> {
-                                            Object value = e.getValue();
-                                            if (value instanceof JSONObject) {
-                                                return new FastjsonNode((JSONObject) value);
-                                            } else {
-                                                return new TextNode(value.toString());
-                                            }
-                                        }));
+                ((JSONObject) jsonObject)
+                        .entrySet().stream()
+                                .collect(
+                                        Collectors.toMap(
+                                                e -> e.getKey(),
+                                                e -> NodeConverter.convert(e.getValue())));
         return collect.entrySet().iterator();
     }
 
     @Override
     public boolean isValue() {
         return false;
+    }
+
+    @Override
+    public boolean isArray() {
+        return jsonObject instanceof JSONArray;
+    }
+
+    @Override
+    public Iterator<JSONNode> elements() {
+        Iterator<Object> iterator = ((JSONArray) jsonObject).iterator();
+        return new Iterator<JSONNode>() {
+            @Override
+            public boolean hasNext() {
+                return iterator.hasNext();
+            }
+
+            @Override
+            public JSONNode next() {
+                return NodeConverter.convert(iterator.next());
+            }
+        };
     }
 
     @Override

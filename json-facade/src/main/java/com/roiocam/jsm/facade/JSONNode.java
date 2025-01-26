@@ -16,4 +16,8 @@ public interface JSONNode {
     boolean isValue();
 
     <T> T asValue();
+
+    boolean isArray();
+
+    Iterator<JSONNode> elements();
 }
