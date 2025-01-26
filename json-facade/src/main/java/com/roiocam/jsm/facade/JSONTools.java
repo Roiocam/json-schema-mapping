@@ -5,6 +5,8 @@ public interface JSONTools {
 
     JSONNode readTree(String json);
 
+    String writeTree(JSONNode node);
+
     String writeValueAsString(Object serializableForm);
 
     String writeValueAsString(Object serializableForm, boolean prettyPrint);

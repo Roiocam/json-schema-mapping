@@ -4,6 +4,7 @@ package com.roiocam.jsm.tools;
 public class Profile {
     private String name;
     private int age;
+    private String email;
 
     public String getName() {
         return name;
@@ -19,5 +20,13 @@ public class Profile {
 
     public void setAge(int age) {
         this.age = age;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }

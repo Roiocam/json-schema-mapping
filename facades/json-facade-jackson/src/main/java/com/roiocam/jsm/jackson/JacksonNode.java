@@ -14,6 +14,10 @@ public class JacksonNode implements JSONNode {
         this.node = node;
     }
 
+    public JsonNode getNode() {
+        return node;
+    }
+
     @Override
     public boolean isTextual() {
         return node.isTextual();

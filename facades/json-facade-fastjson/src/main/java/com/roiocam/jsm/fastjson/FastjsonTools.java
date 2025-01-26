@@ -14,6 +14,11 @@ public class FastjsonTools implements JSONTools {
     }
 
     @Override
+    public String writeTree(JSONNode node) {
+        return "";
+    }
+
+    @Override
     public String writeValueAsString(Object serializableForm) {
         return this.writeValueAsString(serializableForm, false);
     }

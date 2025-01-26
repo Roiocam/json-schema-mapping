@@ -24,6 +24,14 @@ public class JacksonTools implements JSONTools {
     }
 
     @Override
+    public String writeTree(JSONNode node) {
+        if (node instanceof JacksonNode) {
+            return ((JacksonNode) node).getNode().toPrettyString();
+        }
+        return this.writeValueAsString(node, true);
+    }
+
+    @Override
     public String writeValueAsString(Object serializableForm) {
         return this.writeValueAsString(serializableForm, false);
     }

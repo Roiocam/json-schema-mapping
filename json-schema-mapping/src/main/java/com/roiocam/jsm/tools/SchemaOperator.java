@@ -12,6 +12,9 @@ import com.roiocam.jsm.schema.SchemaPath;
 import com.roiocam.jsm.schema.SchemaTypeMetadata;
 import com.roiocam.jsm.schema.SchemaValue;
 
+/**
+ * Maintainer all schema operation, which only working with objects, won't work with json string.
+ */
 public class SchemaOperator {
 
     /**
@@ -25,7 +28,7 @@ public class SchemaOperator {
     }
 
     /**
-     * Parses a schema and example JSON to a Schema Value
+     * Evaluate a schema JSON to a {@link SchemaValue} by using @{@link SchemaNode} and {@link SchemaPath}
      * @param schema the schema node
      * @param path               the schema path
      * @param json               the JSON string
@@ -36,6 +39,58 @@ public class SchemaOperator {
         return processSchema(schema, path, ctx);
     }
 
+    /**
+     * Evaluate a schema JSON to a Java Object by using @{@link SchemaNode} and {@link SchemaPath}
+     * @param schema
+     * @param path
+     * @param json
+     * @param clazz
+     * @return
+     * @param <T>
+     */
+    public static <T> T parseObject(
+            SchemaNode schema, SchemaPath path, String json, Class<T> clazz) {
+        ReadContext ctx = JsonPath.parse(json);
+        return processObject(schema, path, ctx, clazz);
+    }
+
+    /**
+     * verify the {@link SchemaPath} is match to schema {@link SchemaNode}
+     *
+     * @param schema
+     * @param path
+     * @return
+     */
+    public static boolean schemaMatch(SchemaNode schema, SchemaPath path) {
+        Map<String, Schema<Class<?>>> schemaChildren = schema.getChildren();
+        Map<String, Schema<String>> pathChildren = path.getChildren();
+        if (schemaChildren.isEmpty() && pathChildren.isEmpty()) {
+            // neither schema nor path has parent
+            return (schema.getParent() == null && path.getParent() == null)
+                    || (schema.getParent() != null && path.getParent() != null);
+        }
+
+        // check if the children match
+        for (Map.Entry<String, Schema<Class<?>>> entry : schemaChildren.entrySet()) {
+            if (!pathChildren.containsKey(entry.getKey())) {
+                return Boolean.FALSE;
+            }
+            SchemaNode child = (SchemaNode) entry.getValue();
+            SchemaPath childPath = (SchemaPath) pathChildren.get(entry.getKey());
+            if (!schemaMatch(child, childPath)) {
+                return Boolean.FALSE;
+            }
+        }
+        return Boolean.TRUE;
+    }
+
+    /**
+     * Processes the schema to generate a {@link SchemaValue} object
+     * @param schema
+     * @param path
+     * @param ctx
+     * @return
+     */
     private static SchemaValue processSchema(SchemaNode schema, SchemaPath path, ReadContext ctx) {
         Map<String, Schema<Class<?>>> schemaChildren = schema.getChildren();
         if (schemaChildren.isEmpty()) {
@@ -52,12 +107,15 @@ public class SchemaOperator {
         return result;
     }
 
-    public static <T> T parseObject(
-            SchemaNode schema, SchemaPath path, String json, Class<T> clazz) {
-        ReadContext ctx = JsonPath.parse(json);
-        return processObject(schema, path, ctx, clazz);
-    }
-
+    /**
+     * Processes the schema to generate a Java object
+     * @param schema
+     * @param path
+     * @param ctx
+     * @param clazz
+     * @param <T>
+     * @return
+     */
     private static <T> T processObject(
             SchemaNode schema, SchemaPath path, ReadContext ctx, Class<T> clazz) {
         try {
@@ -89,23 +147,6 @@ public class SchemaOperator {
             return obj;
         } catch (Exception e) {
             throw new RuntimeException("Error parsing object", e);
-        }
-    }
-
-    /**
-     * Sets the value of a field on the provided object
-     *
-     * @param obj   the object
-     * @param field the field name
-     * @param value the value to set
-     */
-    private static void setFieldValue(Object obj, String field, Object value) {
-        try {
-            var fieldRef = obj.getClass().getDeclaredField(field);
-            fieldRef.setAccessible(true);
-            fieldRef.set(obj, value);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            throw new RuntimeException("Error setting field value", e);
         }
     }
 
@@ -151,5 +192,22 @@ public class SchemaOperator {
             }
         }
         return false;
+    }
+
+    /**
+     * Sets the value of a field on the provided object
+     *
+     * @param obj   the object
+     * @param field the field name
+     * @param value the value to set
+     */
+    private static void setFieldValue(Object obj, String field, Object value) {
+        try {
+            var fieldRef = obj.getClass().getDeclaredField(field);
+            fieldRef.setAccessible(true);
+            fieldRef.set(obj, value);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException("Error setting field value", e);
+        }
     }
 }
