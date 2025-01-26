@@ -108,70 +108,79 @@ public class SchemaParser {
         throw new IllegalArgumentException("Unsupported JSON structure: " + node);
     }
 
+    /**
+     * Parses a flatten key into a SchemaNode.
+     * @param flattenKey
+     * @return
+     */
     public static SchemaNode parseFlattenKey(Map<String, String> flattenKey) {
         return parseFlattenKey(flattenKey, null);
     }
 
+    /**
+     * Parses a flatten key into a SchemaNode.
+     * @param flattenKey
+     * @param valueType
+     * @return
+     */
     public static SchemaNode parseFlattenKey(Map<String, String> flattenKey, Class<?> valueType) {
-        SchemaNode root = new SchemaNode(valueType, null);
+        return parseFlattenSchema(
+                flattenKey,
+                (v, p) -> {
+                    if (v == null) {
+                        return new SchemaNode(valueType, p);
+                    } else {
+                        SchemaTypeMetadata metadata = SchemaTypeMetadata.fromString(v);
+                        return new SchemaNode(metadata.getClazz(), p);
+                    }
+                });
+    }
 
-        for (Map.Entry<String, String> entry : flattenKey.entrySet()) {
+    /**
+     * Parses a flatten key mapping into a SchemaPath.
+     * @param flattenMapping
+     * @return
+     */
+    public static SchemaPath parseFlattenPath(Map<String, String> flattenMapping) {
+        return parseFlattenSchema(flattenMapping, SchemaPath::new);
+    }
+
+    /**
+     * Parse flatten key into a pattern in a loop.
+     * @param flattenMapping
+     * @param constructor
+     * @return
+     * @param <T>
+     * @param <R>
+     */
+    private static <T extends Schema, R> T parseFlattenSchema(
+            Map<String, R> flattenMapping, BiFunction<R, T, T> constructor) {
+
+        T root = constructor.apply(null, null);
+
+        for (Map.Entry<String, R> entry : flattenMapping.entrySet()) {
             String key = entry.getKey();
             String[] keys = key.split("\\.");
 
-            SchemaNode current = root;
+            T current = root;
             for (int i = 0; i < keys.length; i++) {
                 String part = keys[i];
 
                 // If this is the last part, add the final SchemaNode with the type
                 if (i == keys.length - 1) {
-                    Class<?> clazz = SchemaTypeMetadata.fromString(entry.getValue()).getClazz();
-                    current.addChild(part, new SchemaNode(clazz, current));
+                    current.addChild(part, constructor.apply(entry.getValue(), current));
                 } else {
                     // Navigate or create intermediate nodes
-                    final SchemaNode finalCurrent = current;
+                    final T finalCurrent = current;
+                    Map<String, Schema<?>> children = current.getChildren();
                     current =
-                            (SchemaNode)
-                                    current.getChildren()
-                                            .computeIfAbsent(
-                                                    part, k -> new SchemaNode(null, finalCurrent));
+                            (T)
+                                    children.computeIfAbsent(
+                                            part, k -> constructor.apply(null, finalCurrent));
                 }
             }
         }
 
         return root;
     }
-
-    //    public static SchemaNode parseFlattenKey(Map<String, String> flattenKey, Class<?>
-    // valueType) {
-    //        SchemaNode current = new SchemaNode(valueType, null);
-    //        // {
-    //        //    "user.age" : "int",
-    //        //    "user.name" : "string",
-    //        //    "user.email" : "string",
-    //        //    "token" : "string"
-    //        //}
-    //        // 先提前按 user 分组，转换为下面的形式
-    //        // {
-    //        //    "type" : "com.roiocam.jsm.tools.User",
-    //        //    "user" : {
-    //        //        "name" : "string",
-    //        //        "age" : "int",
-    //        //        "email" : "string"
-    //        //    },
-    //        //    "token" : "string"
-    //        //}
-    //        for (Map.Entry<String, String> entry : flattenKey.entrySet()) {
-    //            String key = entry.getKey();
-    //            String[] keys = key.split("\\.");
-    //            if (keys.length == 1) {
-    //                Class<?> clazz = SchemaTypeMetadata.fromString(entry.getValue()).getClazz();
-    //                current.addChild(key, new SchemaNode(clazz, current));
-    //            } else {
-    //                // TODO: Implement nested schema
-    //
-    //            }
-    //        }
-    //        return null;
-    //    }
 }

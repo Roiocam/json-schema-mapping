@@ -51,4 +51,13 @@ public class JacksonTools implements JSONTools {
             throw new RuntimeException(e);
         }
     }
+
+    @Override
+    public <T> T readValue(String json, Class<T> valueType) {
+        try {
+            return objectMapper.readValue(json, valueType);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

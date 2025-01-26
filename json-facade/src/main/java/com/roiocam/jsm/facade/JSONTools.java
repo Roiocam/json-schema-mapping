@@ -10,4 +10,6 @@ public interface JSONTools {
     String writeValueAsString(Object serializableForm);
 
     String writeValueAsString(Object serializableForm, boolean prettyPrint);
+
+    <T> T readValue(String json, Class<T> valueType);
 }

@@ -34,4 +34,9 @@ public class FastjsonTools implements JSONTools {
         }
         return JSON.toJSONString(serializableForm);
     }
+
+    @Override
+    public <T> T readValue(String json, Class<T> valueType) {
+        return JSON.parseObject(json, valueType);
+    }
 }

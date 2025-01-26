@@ -2,6 +2,8 @@
 
 A simple tool for mapping JSON with different structures based on JSON Path.
 
+Support both structured and flatten schema.
+
 ```
 ---------------------------------------------------------------------------------------------------------
 Schema:                                                  |  Schema Example:
@@ -35,13 +37,12 @@ Schema Value:                                            |  Parsed Object:
     "token" : "123456"                                   |      }                     
 }                                                        |  }
 ---------------------------------------------------------------------------------------------------------
-// TODO
-Flatten Key List:                                        |  Mapping Key List:                        
-[                                                        |  [
-    "user.name",                                         |      "username"                                                    
-    "user.age",                                          |      "profile.age",              
-    "user.email",                                        |      "profile.email",               
-    "token"                                              |      "token"          
-]                                                        |  ]
+Flatten Key:                                             |  Flatten Key Path:           
+{                                                        |  {
+    "user.age" : "int",                                  |      "user.age" : "$.profile.age",                      
+    "user.name" : "string",                              |      "user.name" : "$.username",                          
+    "user.email" : "string",                             |      "user.email" : "$.profile.email",                           
+    "token" : "string"                                   |      "token" : "$.token"                     
+}                                                        |  }
 ---------------------------------------------------------------------------------------------------------
 ```

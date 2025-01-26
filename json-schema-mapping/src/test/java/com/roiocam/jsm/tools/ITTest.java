@@ -105,11 +105,31 @@ abstract class ITTest {
         divider();
 
         // 9. flatten the key map with prefix
-        SchemaNode flattenSchema = SchemaParser.parseFlattenKey(flattenKey);
-        System.out.println("Flatten Schema:");
-        System.out.println(
-                createTools().writeValueAsString(flattenSchema.toSerializableFormat(), true));
+        SchemaNode flattenSchema = SchemaParser.parseFlattenKey(flattenKey, User.class);
+        Assertions.assertEquals(
+                createTools().writeValueAsString(flattenSchema.toSerializableFormat()),
+                createTools().writeValueAsString(schema.toSerializableFormat()));
+
+        // 10. flatten the key map with prefix
+        String flattenMappingJson =
+                """
+                {
+                  "user.age" : "$.profile.age",
+                  "user.name" : "$.username",
+                  "user.email" : "$.profile.email",
+                  "token" : "$.token"
+                }
+                """;
+
+        Map<String, String> flattenMapping = createTools().readValue(flattenMappingJson, Map.class);
+        System.out.println("Flatten Key Path:");
+        System.out.println(createTools().writeValueAsString(flattenMapping, true));
         divider();
+
+        SchemaPath flattenMappingPath = SchemaParser.parseFlattenPath(flattenMapping);
+        Assertions.assertEquals(
+                createTools().writeValueAsString(flattenMappingPath.toSerializableFormat()),
+                createTools().writeValueAsString(path.toSerializableFormat()));
     }
 
     private static void divider() {
