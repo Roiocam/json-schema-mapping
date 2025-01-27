@@ -2,15 +2,25 @@
 package com.roiocam.jsm.tools;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.List;
 import java.util.Map;
 
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.ReadContext;
-import com.roiocam.jsm.schema.Schema;
-import com.roiocam.jsm.schema.SchemaNode;
-import com.roiocam.jsm.schema.SchemaPath;
+import com.roiocam.jsm.api.ISchemaNode;
+import com.roiocam.jsm.api.ISchemaPath;
+import com.roiocam.jsm.api.ISchemaValue;
 import com.roiocam.jsm.schema.SchemaTypeMetadata;
-import com.roiocam.jsm.schema.SchemaValue;
+import com.roiocam.jsm.schema.array.ArraySchemaNode;
+import com.roiocam.jsm.schema.array.ArraySchemaPath;
+import com.roiocam.jsm.schema.obj.ObjSchemaNode;
+import com.roiocam.jsm.schema.obj.ObjSchemaPath;
+import com.roiocam.jsm.schema.value.SchemaNode;
+import com.roiocam.jsm.schema.value.SchemaPath;
+import com.roiocam.jsm.schema.value.SchemaValue;
 
 /**
  * Maintainer all schema operation, which only working with objects, won't work with json string.
@@ -23,8 +33,92 @@ public class SchemaOperator {
      * @param obj the Java object
      * @return a schema.SchemaNode representing the schema
      */
-    public static SchemaNode generateSchema(Class<?> obj) {
+    public static ISchemaNode generateSchema(Class<?> obj) {
         return processObject(obj, null);
+    }
+
+    /**
+     * Processes the Java object to generate schema and example data.
+     *
+     * @param clz the object class to process
+     * @return a schema.SchemaNode representing the object
+     */
+    private static ISchemaNode processObject(Class<?> clz, ISchemaNode parent) {
+        // Root Node
+        if (clz == null) {
+            return new SchemaNode(null, parent);
+        }
+        SchemaTypeMetadata typeMetadata = SchemaTypeMetadata.fromClass(clz);
+        Class<?> boxedClz = clz;
+        if (typeMetadata != null) {
+            boxedClz = typeMetadata.getClazz();
+        }
+        // Leaf Node
+        if (typeMetadata != null && !typeMetadata.isCollection()) {
+            return new SchemaNode(boxedClz, parent);
+        }
+
+        // Array Node
+        if (typeMetadata != null && typeMetadata.isCollection()) {
+            return getArraySchemaNode(boxedClz, parent);
+        }
+
+        // Object Node
+        try {
+            ObjSchemaNode current = new ObjSchemaNode(parent);
+            Field[] fields = clz.getDeclaredFields();
+            for (Field field : fields) {
+                field.setAccessible(true);
+                Class<?> fieldType = field.getType();
+                SchemaTypeMetadata metadata = SchemaTypeMetadata.fromClass(fieldType);
+                // Nested object
+                if (metadata == null) {
+                    current.addChild(field.getName(), processObject(fieldType, current));
+                    continue;
+                }
+                // Plain value
+                if (!metadata.isCollection()) {
+                    ISchemaNode childNode = processObject(fieldType, current);
+                    current.addChild(field.getName(), childNode);
+                    continue;
+                }
+                // Collection type
+                if (metadata.isCollection()) {
+                    // Array type
+                    if (fieldType.isArray()) {
+                        ArraySchemaNode arraySchemaNode =
+                                getArraySchemaNode(fieldType.getComponentType(), current);
+                        current.addChild(field.getName(), arraySchemaNode);
+                        continue;
+                    }
+                    // Collection type
+                    if (field.getGenericType() instanceof ParameterizedType) {
+                        ParameterizedType parameterizedType =
+                                (ParameterizedType) field.getGenericType();
+                        Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
+                        if (actualTypeArguments.length > 0
+                                && actualTypeArguments[0] instanceof Class) {
+                            Class<?> listElementClass = (Class<?>) actualTypeArguments[0];
+                            ArraySchemaNode arraySchemaNode =
+                                    getArraySchemaNode(listElementClass, current);
+                            current.addChild(field.getName(), arraySchemaNode);
+                        }
+                        continue;
+                    }
+                }
+                throw new UnsupportedOperationException("Unsupported type: " + metadata);
+            }
+            return current;
+        } catch (Exception e) {
+            throw new RuntimeException("Error processing object", e);
+        }
+    }
+
+    private static ArraySchemaNode getArraySchemaNode(Class<?> clz, ISchemaNode parent) {
+        ISchemaNode schemaNode = processObject(clz, null);
+        ArraySchemaNode arraySchemaNode = new ArraySchemaNode((ISchemaNode) schemaNode, parent);
+        schemaNode.setParent(arraySchemaNode);
+        return arraySchemaNode;
     }
 
     /**
@@ -34,9 +128,70 @@ public class SchemaOperator {
      * @param json               the JSON string
      * @return
      */
-    public static SchemaValue evaluateValue(SchemaNode schema, SchemaPath path, String json) {
-        ReadContext ctx = JsonPath.parse(json);
-        return processSchema(schema, path, ctx);
+    public static ISchemaValue evaluateValue(ISchemaNode schema, ISchemaPath path, String json) {
+        try {
+            ReadContext ctx = JsonPath.parse(json);
+            return evaluateValue(schema, path, ctx);
+        } catch (Exception e) {
+            throw new RuntimeException("Error evaluating object", e);
+        }
+    }
+
+    private static ISchemaValue evaluateValue(ISchemaNode schema, ISchemaPath path, ReadContext ctx)
+            throws NoSuchMethodException,
+                    InvocationTargetException,
+                    InstantiationException,
+                    IllegalAccessException {
+        // TODO
+        return null;
+        //        if (!schemaMatch(schema, path)) {
+        //            throw new IllegalArgumentException("Schema and path do not match");
+        //        }
+        //        //
+        //        if (schema instanceof ArraySchemaNode) {
+        //            // TODO
+        //
+        //        }
+        //        if (schema instanceof ObjSchemaNode) {
+        //            Class<?> value = ((SchemaNode) schema).getValue();
+        //            if (!value.equals(clazz)) {
+        //                throw new IllegalArgumentException("Schema value does not match class
+        // type");
+        //            }
+        //            // Create an instance of the class
+        //            T obj = clazz.getConstructor().newInstance();
+        //            ObjSchemaNode objSchema = (ObjSchemaNode) schema;
+        //            ObjSchemaPath objPath = (ObjSchemaPath) path;
+        //
+        //            Map<String, ISchemaNode> schemaChildren = objSchema.getChildren();
+        //            Map<String, ISchemaValue> pathChildren = objPath.getChildren();
+        //
+        //            // For each child node, recursively parse and set the value
+        //            for (Map.Entry<String, ISchemaNode> entry : schemaChildren.entrySet()) {
+        //                String fieldName = entry.getKey();
+        //                ISchemaNode childSchema = entry.getValue();
+        //                ISchemaPath childPath = (ISchemaPath) pathChildren.get(fieldName);
+        //                // Recursively process the child object
+        //                Object childValue =
+        //                        processObject(childSchema, childPath, ctx,
+        // childSchema.getValue());
+        //                setFieldValue(obj, fieldName, childValue);
+        //            }
+        //
+        //            return obj;
+        //        }
+        //
+        //        if (schema instanceof SchemaNode) {
+        //            Class<?> value = ((SchemaNode) schema).getValue();
+        //            if (!value.equals(clazz)) {
+        //                throw new IllegalArgumentException("Schema value does not match class
+        // type");
+        //            }
+        //            String pathEval = ((SchemaPath) path).getValue();
+        //            return ctx.read(pathEval, clazz);
+        //        }
+        //
+        //        throw new UnsupportedOperationException("Unsupported schema type");
     }
 
     /**
@@ -49,9 +204,13 @@ public class SchemaOperator {
      * @param <T>
      */
     public static <T> T evaluateObject(
-            SchemaNode schema, SchemaPath path, String json, Class<T> clazz) {
-        ReadContext ctx = JsonPath.parse(json);
-        return processObject(schema, path, ctx, clazz);
+            ISchemaNode schema, ISchemaPath path, String json, Class<T> clazz) {
+        try {
+            ReadContext ctx = JsonPath.parse(json);
+            return evaluateObject(schema, path, ctx, clazz);
+        } catch (Exception e) {
+            throw new RuntimeException("Error evaluating object", e);
+        }
     }
 
     /**
@@ -61,50 +220,55 @@ public class SchemaOperator {
      * @param path
      * @return
      */
-    public static boolean schemaMatch(SchemaNode schema, SchemaPath path) {
-        Map<String, Schema<Class<?>>> schemaChildren = schema.getChildren();
-        Map<String, Schema<String>> pathChildren = path.getChildren();
-        if (schemaChildren.isEmpty() && pathChildren.isEmpty()) {
-            // neither schema nor path has parent
-            return (schema.getParent() == null && path.getParent() == null)
-                    || (schema.getParent() != null && path.getParent() != null);
+    public static boolean schemaMatch(ISchemaNode schema, ISchemaPath path) {
+        // 1. check if the array schema and array path are the same.
+        if (schema instanceof ArraySchemaNode) {
+            if (!(path instanceof ArraySchemaPath)) {
+                return Boolean.FALSE;
+            }
+            ISchemaNode schemaNode = ((ArraySchemaNode) schema).getValue();
+            List<ISchemaPath> value = ((ArraySchemaPath) path).getValue();
+            // Array 只可以取单个值
+            if (value.size() != 0) {
+                return Boolean.FALSE;
+            }
+            return schemaMatch(schemaNode, value.get(0));
+        }
+        // 2. check if the obj schema and obj path are the same.
+        if (schema instanceof ObjSchemaNode) {
+            if (!(path instanceof ObjSchemaPath)) {
+                return Boolean.FALSE;
+            }
+            ObjSchemaNode objSchema = (ObjSchemaNode) schema;
+            ObjSchemaPath objPath = (ObjSchemaPath) path;
+            Map<String, ISchemaNode> schemaChildren = objSchema.getChildren();
+            Map<String, ISchemaValue> pathChildren = objPath.getChildren();
+            if (schemaChildren.isEmpty() && pathChildren.isEmpty()) {
+                // neither schema nor path has parent
+                return ((objSchema).getParent() == null && (objPath).getParent() == null)
+                        || ((objSchema).getParent() != null && (objPath).getParent() != null);
+            }
+            // check if the children match
+            for (Map.Entry<String, ISchemaNode> entry : schemaChildren.entrySet()) {
+                if (!pathChildren.containsKey(entry.getKey())) {
+                    return Boolean.FALSE;
+                }
+                ISchemaNode child = entry.getValue();
+                ISchemaPath childPath = (ISchemaPath) pathChildren.get(entry.getKey());
+                if (!schemaMatch(child, childPath)) {
+                    return Boolean.FALSE;
+                }
+            }
         }
 
-        // check if the children match
-        for (Map.Entry<String, Schema<Class<?>>> entry : schemaChildren.entrySet()) {
-            if (!pathChildren.containsKey(entry.getKey())) {
-                return Boolean.FALSE;
-            }
-            SchemaNode child = (SchemaNode) entry.getValue();
-            SchemaPath childPath = (SchemaPath) pathChildren.get(entry.getKey());
-            if (!schemaMatch(child, childPath)) {
+        // 3. check if the value schema and value path are the same.
+        if (schema instanceof SchemaNode) {
+            if (path == null || !(path instanceof SchemaPath)) {
                 return Boolean.FALSE;
             }
         }
+
         return Boolean.TRUE;
-    }
-
-    /**
-     * Processes the schema to generate a {@link SchemaValue} object
-     * @param schema
-     * @param path
-     * @param ctx
-     * @return
-     */
-    private static SchemaValue processSchema(SchemaNode schema, SchemaPath path, ReadContext ctx) {
-        Map<String, Schema<Class<?>>> schemaChildren = schema.getChildren();
-        if (schemaChildren.isEmpty()) {
-            return new SchemaValue(ctx.read(path.getValue(), schema.getValue()), path);
-        }
-
-        SchemaValue result = new SchemaValue(null, path);
-        Map<String, Schema<String>> pathChildren = path.getChildren();
-        for (Map.Entry<String, Schema<Class<?>>> entry : schemaChildren.entrySet()) {
-            SchemaNode child = (SchemaNode) entry.getValue();
-            SchemaPath childPath = (SchemaPath) pathChildren.get(entry.getKey());
-            result.addChild(entry.getKey(), processSchema(child, childPath, ctx));
-        }
-        return result;
     }
 
     /**
@@ -116,82 +280,60 @@ public class SchemaOperator {
      * @param <T>
      * @return
      */
-    private static <T> T processObject(
-            SchemaNode schema, SchemaPath path, ReadContext ctx, Class<T> clazz) {
-        try {
-            if (!schema.getValue().equals(clazz)) {
+    private static <T> T evaluateObject(
+            ISchemaNode schema, ISchemaPath path, ReadContext ctx, Class<T> clazz)
+            throws NoSuchMethodException,
+                    InvocationTargetException,
+                    InstantiationException,
+                    IllegalAccessException {
+        if (!schemaMatch(schema, path)) {
+            throw new IllegalArgumentException("Schema and path do not match");
+        }
+        //
+        if (schema instanceof ArraySchemaNode) {
+            // TODO
+
+        }
+        if (schema instanceof ObjSchemaNode) {
+            Class<?> value = ((SchemaNode) schema).getValue();
+            if (!value.equals(clazz)) {
                 throw new IllegalArgumentException("Schema value does not match class type");
             }
-            // If there are no children (leaf node), just extract the value
-            Map<String, Schema<Class<?>>> schemaChildren = schema.getChildren();
-            if (clazz.isPrimitive() || schemaChildren.isEmpty()) {
-                return ctx.read(path.getValue(), clazz);
-            }
-
             // Create an instance of the class
             T obj = clazz.getConstructor().newInstance();
+            ObjSchemaNode objSchema = (ObjSchemaNode) schema;
+            ObjSchemaPath objPath = (ObjSchemaPath) path;
+
+            Map<String, ISchemaNode> schemaChildren = objSchema.getChildren();
+            Map<String, ISchemaValue> pathChildren = objPath.getChildren();
 
             // For each child node, recursively parse and set the value
-            Map<String, Schema<String>> pathChildren = path.getChildren();
-            for (Map.Entry<String, Schema<Class<?>>> entry : schemaChildren.entrySet()) {
+            for (Map.Entry<String, ISchemaNode> entry : schemaChildren.entrySet()) {
                 String fieldName = entry.getKey();
-                SchemaNode childSchema = (SchemaNode) entry.getValue();
-                SchemaPath childPath = (SchemaPath) pathChildren.get(fieldName);
-
+                ISchemaNode childSchema = entry.getValue();
+                ISchemaPath childPath = (ISchemaPath) pathChildren.get(fieldName);
                 // Recursively process the child object
-                Object childValue =
-                        processObject(childSchema, childPath, ctx, childSchema.getValue());
+                // TODO
+                //                Object childValue =
+                //                        processObject(childSchema, childPath, ctx,
+                // childSchema.getValue());
+                Object childValue = null;
                 setFieldValue(obj, fieldName, childValue);
             }
 
             return obj;
-        } catch (Exception e) {
-            throw new RuntimeException("Error parsing object", e);
         }
-    }
 
-    /**
-     * Processes the Java object to generate schema and example data.
-     *
-     * @param clz the object class to process
-     * @return a schema.SchemaNode representing the object
-     */
-    private static SchemaNode processObject(Class<?> clz, SchemaNode parent) {
-        SchemaNode current = new SchemaNode(clz, parent);
-        try {
-            Field[] fields = clz.getDeclaredFields();
-            for (Field field : fields) {
-                field.setAccessible(true);
-                Class<?> fieldType = field.getType();
-
-                if (isPrimitiveOrWrapper(fieldType) || fieldType == String.class) {
-                    // Primitive or string types
-                    current.addChild(field.getName(), new SchemaNode(fieldType, current));
-                } else {
-                    // Nested object
-                    SchemaNode childSchema = processObject(fieldType, current);
-                    current.addChild(field.getName(), childSchema);
-                }
+        if (schema instanceof SchemaNode) {
+            Class<?> value = ((SchemaNode) schema).getValue();
+            if (!value.equals(clazz)) {
+                throw new IllegalArgumentException("Schema value does not match class type");
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+            String pathEval = ((SchemaPath) path).getValue();
+            return ctx.read(pathEval, clazz);
         }
-        return current;
-    }
 
-    /**
-     * Determines if a class is a primitive type or a wrapper type.
-     */
-    private static boolean isPrimitiveOrWrapper(Class<?> clazz) {
-        if (clazz.isPrimitive()) {
-            return true;
-        }
-        for (SchemaTypeMetadata value : SchemaTypeMetadata.values()) {
-            if (value.getClazz().equals(clazz)) {
-                return true;
-            }
-        }
-        return false;
+        throw new UnsupportedOperationException("Unsupported schema type");
     }
 
     /**

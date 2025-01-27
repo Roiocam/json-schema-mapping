@@ -1,13 +1,8 @@
 /* (C)2025 */
-package com.roiocam.jsm.schema;
+package com.roiocam.jsm.tools;
 
-public class SchemaPath extends SchemaValue<String> {
-
-    public SchemaPath(Object value, Schema<?> parent) {
-        super(check(value), parent);
-    }
-
-    private static String check(Object value) {
+public class PathValidator {
+    public static String check(Object value) {
         if (value instanceof String) {
             String strVal = (String) value;
             if (strVal.startsWith("$.") && strVal.length() > 2) {
