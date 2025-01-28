@@ -1,13 +1,14 @@
 /* (C)2025 */
 package com.roiocam.jsm.tools;
 
-import com.roiocam.jsm.facade.JSONTools;
-import com.roiocam.jsm.jackson.JacksonToolsFactory;
+import com.roiocam.jsm.facade.JSONFactory;
+import com.roiocam.jsm.jackson.JacksonFactory;
 
 public class JSITTest extends ITTest {
+    private static final JacksonFactory factory = new JacksonFactory();
 
     @Override
-    JSONTools createTools() {
-        return new JacksonToolsFactory().create();
+    JSONFactory getFactory() {
+        return factory;
     }
 }

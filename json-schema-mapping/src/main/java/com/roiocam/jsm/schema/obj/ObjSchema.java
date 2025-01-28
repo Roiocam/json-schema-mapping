@@ -15,8 +15,8 @@ public abstract class ObjSchema<T, R extends ISchema> extends Schema<T> {
      */
     private Map<String, R> children;
 
-    public ObjSchema(ISchema parent) {
-        super(null, parent);
+    public ObjSchema(T value, ISchema parent) {
+        super(value, parent);
         this.children = new HashMap<>();
     }
 

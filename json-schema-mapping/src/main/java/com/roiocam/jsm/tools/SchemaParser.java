@@ -73,17 +73,20 @@ public class SchemaParser {
             if (arrayNode.size() != 1) {
                 throw new IllegalArgumentException("Array node should have only one element");
             }
-            ArraySchemaNode arraySchemaNode = new ArraySchemaNode(arrayNode.get(0), parent);
+            // TODO 拿到类型
+            ArraySchemaNode arraySchemaNode =
+                    new ArraySchemaNode(List.class, arrayNode.get(0), parent);
             arrayNode.get(0).setParent(arraySchemaNode);
             return arraySchemaNode;
         }
 
         if (node.isObject()) {
             // Object node: recursively parse children
-            ObjSchemaNode current = new ObjSchemaNode(parent);
+            ObjSchemaNode current = new ObjSchemaNode(valueType, parent);
             Iterator<Map.Entry<String, JSONNode>> fields = node.fields();
             while (fields.hasNext()) {
                 Map.Entry<String, JSONNode> field = fields.next();
+                // TODO 拿到类型
                 current.addChild(field.getKey(), parseSchemaNode(field.getValue(), current, null));
             }
             return current;

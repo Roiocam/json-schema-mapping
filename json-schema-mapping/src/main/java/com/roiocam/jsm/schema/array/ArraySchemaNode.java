@@ -7,15 +7,22 @@ import com.roiocam.jsm.api.ISchemaExample;
 import com.roiocam.jsm.api.ISchemaNode;
 import com.roiocam.jsm.schema.value.Schema;
 
-public class ArraySchemaNode extends Schema<ISchemaNode> implements ISchemaNode {
+public class ArraySchemaNode extends Schema<Class<?>> implements ISchemaNode {
 
-    public ArraySchemaNode(ISchemaNode value, ISchemaNode parent) {
-        super(value, parent);
+    private final ISchemaNode paramType;
+
+    public ArraySchemaNode(Class<?> arrayType, ISchemaNode paramType, ISchemaNode parent) {
+        super(arrayType, parent);
+        this.paramType = paramType;
+    }
+
+    public ISchemaNode getParamType() {
+        return paramType;
     }
 
     @Override
     public Object toSerializableFormat() {
-        return List.of(getValue().toSerializableFormat());
+        return List.of(getParamType().toSerializableFormat());
     }
 
     /**
@@ -26,8 +33,8 @@ public class ArraySchemaNode extends Schema<ISchemaNode> implements ISchemaNode 
     @Override
     public ISchemaExample generateExample(ISchemaExample parent) {
         ArraySchemaExample example = new ArraySchemaExample(parent);
-        ISchemaNode value = getValue();
-        ISchemaExample schema = value.generateExample(parent);
+        ISchemaNode paramType = getParamType();
+        ISchemaExample schema = paramType.generateExample(parent);
         example.addElement(schema);
         return example;
     }

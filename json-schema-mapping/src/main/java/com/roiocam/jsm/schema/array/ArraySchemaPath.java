@@ -3,7 +3,7 @@ package com.roiocam.jsm.schema.array;
 
 import com.roiocam.jsm.api.ISchemaPath;
 
-public class ArraySchemaPath extends ArraySchema<String, ISchemaPath> implements ISchemaPath {
+public class ArraySchemaPath extends ArraySchema<ISchemaPath> implements ISchemaPath {
     public ArraySchemaPath(ISchemaPath parent) {
         super(parent);
     }

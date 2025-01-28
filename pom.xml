@@ -49,6 +49,7 @@
         <jackson.version>2.16.2</jackson.version>
         <auto-service.version>1.1.1</auto-service.version>
         <guava.version>32.0.1-jre</guava.version>
+        <json-smart.version>2.5.1</json-smart.version>
     </properties>
     
     <dependencyManagement>
@@ -72,6 +73,11 @@
                 <groupId>io.github.roiocam</groupId>
                 <artifactId>json-facade-fastjson</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.minidev</groupId>
+                <artifactId>json-smart</artifactId>
+                <version>${json-smart.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.jayway.jsonpath</groupId>

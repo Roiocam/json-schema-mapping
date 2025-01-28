@@ -8,8 +8,8 @@ import com.roiocam.jsm.api.ISchemaNode;
 
 public class ObjSchemaNode extends ObjSchema<Class<?>, ISchemaNode> implements ISchemaNode {
 
-    public ObjSchemaNode(ISchemaNode parent) {
-        super(parent);
+    public ObjSchemaNode(Class<?> clz, ISchemaNode parent) {
+        super(clz, parent);
     }
 
     /**

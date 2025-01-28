@@ -4,14 +4,14 @@ package com.roiocam.jsm.tools;
 import com.roiocam.jsm.api.ISchemaNode;
 import com.roiocam.jsm.api.ISchemaPath;
 import com.roiocam.jsm.api.ISchemaValue;
+import com.roiocam.jsm.facade.JSONFactory;
 import com.roiocam.jsm.facade.JSONNode;
-import com.roiocam.jsm.facade.JSONTools;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 abstract class ITTest {
 
-    abstract JSONTools createTools();
+    abstract JSONFactory getFactory();
 
     @Test
     public void test() {
@@ -19,12 +19,14 @@ abstract class ITTest {
         // 1. generate schema from a Java object
         ISchemaNode schema = SchemaOperator.generateSchema(User.class);
         System.out.println("Schema:");
-        System.out.println(createTools().writeValueAsString(schema.toSerializableFormat(), true));
+        System.out.println(
+                getFactory().create().writeValueAsString(schema.toSerializableFormat(), true));
         divider();
 
         System.out.println("Schema Example:");
         System.out.println(
-                createTools()
+                getFactory()
+                        .create()
                         .writeValueAsString(schema.generateExample().toSerializableFormat(), true));
         divider();
 
@@ -40,10 +42,11 @@ abstract class ITTest {
                       "token" : "$.token"
                     }
                     """;
-        ISchemaPath path = SchemaParser.parsePath(createTools(), pathJson);
+        ISchemaPath path = SchemaParser.parsePath(getFactory().create(), pathJson);
         Assertions.assertNotNull(path);
         System.out.println("Schema Path:");
-        System.out.println(createTools().writeValueAsString(path.toSerializableFormat(), true));
+        System.out.println(
+                getFactory().create().writeValueAsString(path.toSerializableFormat(), true));
         divider();
 
         // 3. verify the SchemaPath is match to the SchemaNode
@@ -61,20 +64,22 @@ abstract class ITTest {
                       "token" : "123456"
                     }
                     """;
-        JSONNode jsonNode = createTools().readTree(outerJson);
+        JSONNode jsonNode = getFactory().create().readTree(outerJson);
         System.out.println("Difference Structure:");
-        System.out.println(createTools().writeTree(jsonNode));
+        System.out.println(getFactory().create().writeTree(jsonNode));
         divider();
 
-        ISchemaValue value = SchemaOperator.evaluateValue(schema, path, outerJson);
+        ISchemaValue value = SchemaOperator.evaluateValue(schema, path, getFactory(), outerJson);
         System.out.println("Evaluate Value:");
-        System.out.println(createTools().writeValueAsString(value.toSerializableFormat(), true));
+        System.out.println(
+                getFactory().create().writeValueAsString(value.toSerializableFormat(), true));
         divider();
 
         // 6. evaluate the value to a Java object
-        User user = SchemaOperator.evaluateObject(schema, path, outerJson, User.class);
+        User user =
+                SchemaOperator.evaluateObject(schema, path, getFactory(), outerJson, User.class);
         System.out.println("Evaluate Object:");
-        System.out.println(createTools().writeValueAsString(user, true));
+        System.out.println(getFactory().create().writeValueAsString(user, true));
         divider();
 
         // 7. parse a JSON string to a SchemaValue
@@ -89,17 +94,18 @@ abstract class ITTest {
                         }
                     }
                     """;
-        ISchemaValue parsedValue = SchemaParser.parseValue(createTools(), parseJson);
+        ISchemaValue parsedValue = SchemaParser.parseValue(getFactory().create(), parseJson);
         Assertions.assertNotNull(parsedValue);
         System.out.println("Parsed Value:");
         System.out.println(
-                createTools().writeValueAsString(parsedValue.toSerializableFormat(), true));
+                getFactory().create().writeValueAsString(parsedValue.toSerializableFormat(), true));
         divider();
 
         //            // 8. flatten the key map
         //            Map<String, String> flattenKey = schema.toFlattenKeyMap();
         //            System.out.println("Flatten Key:");
-        //            System.out.println(createTools().writeValueAsString(flattenKey, true));
+        //            System.out.println(getFactory().create().writeValueAsString(flattenKey,
+        // true));
         //            divider();
         //
         //            // 9. flatten the key map with prefix
@@ -107,8 +113,9 @@ abstract class ITTest {
         // User.class);
         //            Assertions.assertEquals(
         //
-        // createTools().writeValueAsString(flattenSchema.toSerializableFormat()),
-        //                    createTools().writeValueAsString(schema.toSerializableFormat()));
+        // getFactory().create().writeValueAsString(flattenSchema.toSerializableFormat()),
+        //
+        // getFactory().create().writeValueAsString(schema.toSerializableFormat()));
         //
         //            // 10. flatten the key map with prefix
         //            String flattenMappingJson =
@@ -122,18 +129,20 @@ abstract class ITTest {
         //                    """;
         //
         //            Map<String, String> flattenMapping =
-        // createTools().readValue(flattenMappingJson,
+        // getFactory().create().readValue(flattenMappingJson,
         //     Map.class);
         //            System.out.println("Flatten Key Path:");
-        //            System.out.println(createTools().writeValueAsString(flattenMapping, true));
+        //            System.out.println(getFactory().create().writeValueAsString(flattenMapping,
+        // true));
         //            divider();
         //
         //            ISchemaPath flattenMappingPath =
         // SchemaParser.parseFlattenPath(flattenMapping);
         //            Assertions.assertEquals(
         //
-        // createTools().writeValueAsString(flattenMappingPath.toSerializableFormat()),
-        //                    createTools().writeValueAsString(path.toSerializableFormat()));
+        // getFactory().create().writeValueAsString(flattenMappingPath.toSerializableFormat()),
+        //
+        // getFactory().create().writeValueAsString(path.toSerializableFormat()));
     }
 
     private static void divider() {

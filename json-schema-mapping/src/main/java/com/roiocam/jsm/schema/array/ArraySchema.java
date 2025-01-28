@@ -7,7 +7,7 @@ import java.util.List;
 import com.roiocam.jsm.api.ISchema;
 import com.roiocam.jsm.schema.value.Schema;
 
-public class ArraySchema<T, R extends ISchema> extends Schema<List<R>> {
+public class ArraySchema<R extends ISchema> extends Schema<List<R>> {
     public ArraySchema(R parent) {
         super(new ArrayList<>(), parent);
     }

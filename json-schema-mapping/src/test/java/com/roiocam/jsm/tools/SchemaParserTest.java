@@ -5,12 +5,12 @@ import com.roiocam.jsm.api.ISchemaExample;
 import com.roiocam.jsm.api.ISchemaNode;
 import com.roiocam.jsm.api.ISchemaPath;
 import com.roiocam.jsm.api.ISchemaValue;
-import com.roiocam.jsm.facade.JSONTools;
+import com.roiocam.jsm.facade.JSONFactory;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 abstract class SchemaParserTest {
-    abstract JSONTools createTools();
+    abstract JSONFactory getFactory();
 
     @Test
     public void test() {
@@ -26,13 +26,13 @@ abstract class SchemaParserTest {
             """;
 
         // Parse the schema JSON into a schema.SchemaNode
-        ISchemaNode schemaNode = SchemaParser.parseNode(createTools(), schemaJson);
+        ISchemaNode schemaNode = SchemaParser.parseNode(getFactory().create(), schemaJson);
 
         Assertions.assertNotNull(schemaNode);
         Object nodeSerializableFormat = schemaNode.toSerializableFormat();
         Assertions.assertEquals(
-                createTools().writeTree(createTools().readTree(schemaJson)),
-                createTools().writeValueAsString(nodeSerializableFormat));
+                getFactory().create().writeTree(getFactory().create().readTree(schemaJson)),
+                getFactory().create().writeValueAsString(nodeSerializableFormat));
 
         // Generate Example JSON from schema.SchemaNode
         System.out.println("Example JSON:");
@@ -41,7 +41,7 @@ abstract class SchemaParserTest {
         // Serialize Example JSON
         Object exampleJsonSerializableFormat = exampleJson.toSerializableFormat();
         String exampleJsonString =
-                createTools().writeValueAsString(exampleJsonSerializableFormat, true);
+                getFactory().create().writeValueAsString(exampleJsonSerializableFormat, true);
         System.out.println(exampleJsonString);
 
         String schemaPathJson =
@@ -54,13 +54,13 @@ abstract class SchemaParserTest {
                       "token" : "$.token"
                     }
                     """;
-        ISchemaPath schemaPath = SchemaParser.parsePath(createTools(), schemaPathJson);
+        ISchemaPath schemaPath = SchemaParser.parsePath(getFactory().create(), schemaPathJson);
         Assertions.assertNotNull(schemaPath);
 
         Object pathSerializableForm = schemaPath.toSerializableFormat();
         Assertions.assertEquals(
-                createTools().writeTree(createTools().readTree(schemaPathJson)),
-                createTools().writeValueAsString(pathSerializableForm));
+                getFactory().create().writeTree(getFactory().create().readTree(schemaPathJson)),
+                getFactory().create().writeValueAsString(pathSerializableForm));
     }
 
     @Test
@@ -104,10 +104,11 @@ abstract class SchemaParserTest {
             }
             """;
 
-        ISchemaValue schemaNode = SchemaParser.parseValue(createTools(), schemaJson);
+        ISchemaValue schemaNode = SchemaParser.parseValue(getFactory().create(), schemaJson);
         Assertions.assertNotNull(schemaNode);
         System.out.println("Example JSON:");
         Object exampleJsonSerializableFormat = schemaNode.toSerializableFormat();
-        System.out.println(createTools().writeValueAsString(exampleJsonSerializableFormat, true));
+        System.out.println(
+                getFactory().create().writeValueAsString(exampleJsonSerializableFormat, true));
     }
 }
