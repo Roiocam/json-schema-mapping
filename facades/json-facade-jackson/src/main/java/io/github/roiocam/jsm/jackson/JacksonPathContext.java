@@ -2,19 +2,31 @@
 package io.github.roiocam.jsm.jackson;
 
 import java.util.Collection;
+import java.util.regex.Matcher;
 
 import com.jayway.jsonpath.ReadContext;
 import io.github.roiocam.jsm.facade.JSONPathContext;
+import io.github.roiocam.jsm.facade.JSONTools;
 
 public class JacksonPathContext implements JSONPathContext {
     private final ReadContext ctx;
+    private final JSONTools jsonTools;
 
-    public JacksonPathContext(ReadContext ctx) {
+    public JacksonPathContext(ReadContext ctx, JSONTools jsonTools) {
         this.ctx = ctx;
+        this.jsonTools = jsonTools;
     }
 
     @Override
     public <T> T read(String path, Class<T> type) {
+        Matcher matcher = PATTERN.matcher(path);
+        if (matcher.find()) {
+            String group = matcher.group(2);
+            if (type.equals(String.class)) {
+                return (T) group;
+            }
+            return jsonTools.readValue(group, type);
+        }
         Object value = ctx.read(path, type);
         return (T) value;
     }

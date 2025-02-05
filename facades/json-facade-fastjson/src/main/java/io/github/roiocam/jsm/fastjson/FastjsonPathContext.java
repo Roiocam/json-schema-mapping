@@ -6,7 +6,9 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONPath;
 import io.github.roiocam.jsm.facade.JSONPathContext;
@@ -20,6 +22,14 @@ public class FastjsonPathContext implements JSONPathContext {
 
     @Override
     public <T> T read(String path, Class<T> type) {
+        Matcher matcher = PATTERN.matcher(path);
+        if (matcher.find()) {
+            String group = matcher.group(2);
+            if (type.equals(String.class)) {
+                return (T) group;
+            }
+            return JSON.parseObject(group, type);
+        }
         return JSONPath.read(json, path, type);
     }
 

@@ -58,7 +58,7 @@ public class JacksonFactory implements JSONFactory, Comparable<JSONFactory> {
 
     @Override
     public JSONPathContext createPathContext(String json) {
-        return new JacksonPathContext(JsonPath.parse(json));
+        return new JacksonPathContext(JsonPath.parse(json), create());
     }
 
     @Override

@@ -123,7 +123,7 @@ abstract class SchemaOperatorTest {
                                 "email": "$.buddy[*].id"
                             }],
                             "token": "$.token",
-                            "balance": "$.balance",
+                            "balance": "!!!100!!!",
                             "permissions": ["$.permissions[*]"],
                             "shortValue": "$.config.shortValue",
                             "id": "$.id",
