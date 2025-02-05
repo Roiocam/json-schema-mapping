@@ -72,20 +72,21 @@ public class SchemaOperator {
         // Object Node
         try {
             ObjSchemaNode current = new ObjSchemaNode(clz, parent);
-            Field[] fields = clz.getDeclaredFields();
-            for (Field field : fields) {
-                field.setAccessible(true);
+            Map<String, Field> fieldsMap = getFields(clz);
+            for (Map.Entry<String, Field> entry : fieldsMap.entrySet()) {
+                Field field = entry.getValue();
+                String fieldName = entry.getKey();
                 Class<?> fieldType = field.getType();
                 SchemaTypeMetadata metadata = SchemaTypeMetadata.fromClass(fieldType);
                 // Nested object
                 if (metadata == null) {
-                    current.addChild(field.getName(), processObject(fieldType, current));
+                    current.addChild(fieldName, processObject(fieldType, current));
                     continue;
                 }
                 // Plain value
                 if (!metadata.isCollection()) {
                     ISchemaNode childNode = processObject(fieldType, current);
-                    current.addChild(field.getName(), childNode);
+                    current.addChild(fieldName, childNode);
                     continue;
                 }
                 // Collection type
@@ -95,7 +96,7 @@ public class SchemaOperator {
                         ArraySchemaNode arraySchemaNode =
                                 getArraySchemaNode(
                                         fieldType, fieldType.getComponentType(), current);
-                        current.addChild(field.getName(), arraySchemaNode);
+                        current.addChild(fieldName, arraySchemaNode);
                         continue;
                     }
                     // Collection type
@@ -108,7 +109,7 @@ public class SchemaOperator {
                             Class<?> listElementClass = (Class<?>) actualTypeArguments[0];
                             ArraySchemaNode arraySchemaNode =
                                     getArraySchemaNode(fieldType, listElementClass, current);
-                            current.addChild(field.getName(), arraySchemaNode);
+                            current.addChild(fieldName, arraySchemaNode);
                         }
                         continue;
                     }
@@ -335,13 +336,16 @@ public class SchemaOperator {
                         i++) {
 
                     Object obj = parentClz.getConstructor().newInstance();
+                    Map<String, Field> fieldMap = getFields(parentClz);
+                    if (fieldMap.size() != mapping.size()) {
+                        throw new IllegalArgumentException("Field size not match");
+                    }
                     for (Map.Entry<String, Collection<?>> entry : mapping.entrySet()) {
                         Collection<?> child = entry.getValue();
                         Object[] childArray = child.toArray();
+                        Field field = fieldMap.get(entry.getKey());
                         if (child.size() > i) {
-                            Field field = parentClz.getDeclaredField(entry.getKey());
-                            field.setAccessible(true);
-                            field.set(obj, childArray[i]);
+                            setFieldValue(obj, field, childArray[i]);
                         }
                     }
                     result.add(obj);
@@ -352,6 +356,10 @@ public class SchemaOperator {
                 // Create an instance of the class
                 T obj = clazz.getConstructor().newInstance();
 
+                Map<String, Field> fieldMap = getFields(clazz);
+                if (fieldMap.size() != schemaChildren.size()) {
+                    throw new IllegalArgumentException("Field size not match");
+                }
                 // For each child node, recursively parse and set the value
                 for (Map.Entry<String, ISchemaNode> entry : schemaChildren.entrySet()) {
                     String fieldName = entry.getKey();
@@ -359,15 +367,14 @@ public class SchemaOperator {
                     ISchemaPath childPath = pathChildren.get(fieldName);
 
                     // Determine the field's type via reflection
-                    Field field = clazz.getDeclaredField(fieldName);
-                    field.setAccessible(true);
+                    Field field = fieldMap.get(fieldName);
                     Class<?> fieldType = field.getType();
 
                     // Recursively process the child object
                     Object childValue = evaluateObject(childSchema, childPath, ctx, fieldType);
 
                     // Set the field value
-                    field.set(obj, childValue);
+                    setFieldValue(obj, field, childValue);
                 }
 
                 return obj;
@@ -457,13 +464,37 @@ public class SchemaOperator {
      * @param field the field name
      * @param value the value to set
      */
-    private static void setFieldValue(Object obj, String field, Object value) {
+    private static void setFieldValue(Object obj, Field field, Object value) {
         try {
-            var fieldRef = obj.getClass().getDeclaredField(field);
-            fieldRef.setAccessible(true);
-            fieldRef.set(obj, value);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
+            field.setAccessible(true);
+            field.set(obj, value);
+        } catch (IllegalAccessException e) {
             throw new RuntimeException("Error setting field value", e);
+        }
+    }
+
+    /**
+     * Get all fields from the class and its super class
+     *
+     * @param clz the class
+     * @return a map of field name to field
+     */
+    private static Map<String, Field> getFields(Class<?> clz) {
+        Map<String, Field> fieldCacheMap = new HashMap<>();
+        getFields(clz, fieldCacheMap);
+        return fieldCacheMap;
+    }
+
+    private static void getFields(Class<?> clz, Map<String, Field> fieldCacheMap) {
+        Field[] fields = clz.getDeclaredFields();
+        for (Field field : fields) {
+            String fieldName = field.getName();
+            if (!fieldCacheMap.containsKey(fieldName)) {
+                fieldCacheMap.put(fieldName, field);
+            }
+        }
+        if (clz.getSuperclass() != null && clz.getSuperclass() != Object.class) {
+            getFields(clz.getSuperclass(), fieldCacheMap);
         }
     }
 }
