@@ -21,6 +21,7 @@ import com.roiocam.jsm.schema.SchemaTypeMetadata;
 import com.roiocam.jsm.schema.array.ArraySchemaNode;
 import com.roiocam.jsm.schema.array.ArraySchemaPath;
 import com.roiocam.jsm.schema.array.ArraySchemaValue;
+import com.roiocam.jsm.schema.map.MapSchemaNode;
 import com.roiocam.jsm.schema.obj.ObjSchemaNode;
 import com.roiocam.jsm.schema.obj.ObjSchemaPath;
 import com.roiocam.jsm.schema.obj.ObjSchemaValue;
@@ -96,6 +97,26 @@ public class SchemaOperator {
                                 getArraySchemaNode(
                                         fieldType, fieldType.getComponentType(), current);
                         current.addChild(field.getName(), arraySchemaNode);
+                        continue;
+                    }
+                    // Map Type
+                    if (metadata == SchemaTypeMetadata.MAP) {
+                        Type genericType = field.getGenericType();
+                        if (genericType instanceof ParameterizedType) {
+                            ParameterizedType parameterizedType = (ParameterizedType) genericType;
+                            Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
+                            if (actualTypeArguments.length == 2) {
+                                Class<?> keyElementClass = (Class<?>) actualTypeArguments[0];
+                                Class<?> valueElementClass = (Class<?>) actualTypeArguments[1];
+                                ISchemaNode keyNode = processObject(keyElementClass, null);
+                                ISchemaNode valueNode = processObject(valueElementClass, null);
+                                MapSchemaNode mapSchemaNode =
+                                        new MapSchemaNode(clz, parent, keyNode, valueNode);
+                                keyNode.setParent(mapSchemaNode);
+                                valueNode.setParent(mapSchemaNode);
+                                current.addChild(field.getName(), mapSchemaNode);
+                            }
+                        }
                         continue;
                     }
                     // Collection type

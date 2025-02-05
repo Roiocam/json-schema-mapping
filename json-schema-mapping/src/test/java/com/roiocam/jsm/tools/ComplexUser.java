@@ -4,6 +4,7 @@ package com.roiocam.jsm.tools;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class ComplexUser {
@@ -21,6 +22,7 @@ public class ComplexUser {
     private int[] roles;
     private List<Profile> friends;
     private Set<String> permissions;
+    private Map<String, String> map;
 
     public String getToken() {
         return token;
@@ -132,5 +134,13 @@ public class ComplexUser {
 
     public void setPermissions(Set<String> permissions) {
         this.permissions = permissions;
+    }
+
+    public Map<String, String> getMap() {
+        return map;
+    }
+
+    public void setMap(Map<String, String> map) {
+        this.map = map;
     }
 }

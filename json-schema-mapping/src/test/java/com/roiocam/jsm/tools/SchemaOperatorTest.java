@@ -127,6 +127,9 @@ abstract class SchemaOperatorTest {
                     "permissions": ["$.permissions[*]"],
                     "shortValue": "$.config.shortValue",
                     "id": "$.id",
+                    "map":[{
+                                "$.":"$."
+                            }],
                     "age": "$.age",
                     "timestamp": "$.config.timestamp",
                     "longitude": "$.config.longitude",

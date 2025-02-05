@@ -4,6 +4,7 @@ package com.roiocam.jsm.schema;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public enum SchemaTypeMetadata {
@@ -18,6 +19,7 @@ public enum SchemaTypeMetadata {
     SHORT("short", Short.class, short.class, false),
     LIST("list", List.class, null, true),
     SET("set", Set.class, null, true),
+    MAP("map", Map.class, null, true),
     ARRAY("array", null, null, true),
     BIG_INTEGER("big_integer", java.math.BigInteger.class, null, false),
     BIG_DECIMAL("big_decimal", java.math.BigDecimal.class, null, false),
