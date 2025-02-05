@@ -15,6 +15,7 @@
     <modules>
         <module>json-facade-fastjson</module>
         <module>json-facade-jackson</module>
+        <module>json-facade-gson</module>
     </modules>
     
     <dependencies>
