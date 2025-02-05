@@ -37,45 +37,45 @@ abstract class SchemaOperatorTest {
 
         String schemaPathJson =
                 """
-                    {
-                      "user" : {
-                        "name" : "$.username",
-                        "age" : "$.profile.age",
-                        "email": "$.profile.email"
-                      },
-                      "token" : "$.token"
-                    }
-                    """;
+                        {
+                          "user" : {
+                            "name" : "$.username",
+                            "age" : "$.profile.age",
+                            "email": "$.profile.email"
+                          },
+                          "token" : "$.token"
+                        }
+                        """;
         ISchemaPath schemaPath = SchemaParser.parsePath(getFactory().create(), schemaPathJson);
         Assertions.assertNotNull(schemaPath);
 
         // example json
         String parseJson =
                 """
-                    {
-                        "token": "abc123",
-                        "username": "John",
-                        "profile": {
-                            "displayName": "John Ivy",
-                            "age": 30,
-                            "email": "john.ivy@example.com"
+                        {
+                            "token": "abc123",
+                            "username": "John",
+                            "profile": {
+                                "displayName": "John Ivy",
+                                "age": 30,
+                                "email": "john.ivy@example.com"
+                            }
                         }
-                    }
-                    """;
+                        """;
         ISchemaValue schemaValue =
                 SchemaOperator.evaluateValue(schema, schemaPath, getFactory(), parseJson);
         Object valueSerializableFormat = schemaValue.toSerializableFormat();
         String expectedJson =
                 """
-                    {
-                      "user" : {
-                        "name" : "John",
-                        "age" : 30,
-                        "email": "john.ivy@example.com"
-                      },
-                      "token" : "abc123"
-                    }
-                    """;
+                        {
+                          "user" : {
+                            "name" : "John",
+                            "age" : 30,
+                            "email": "john.ivy@example.com"
+                          },
+                          "token" : "abc123"
+                        }
+                        """;
 
         Assertions.assertEquals(
                 getFactory().create().writeTree(getFactory().create().readTree(expectedJson)),
@@ -112,78 +112,83 @@ abstract class SchemaOperatorTest {
         // Schema path
         String schemaPathJson =
                 """
-                {
-                    "charValue": "$.config.charValue",
-                    "latitude": "$.config.latitude",
-                    "roles": ["$.roles[*].value"],
-                    "active": "$.active",
-                    "friends": [{
-                        "name": "$.buddy[*].profile.name",
-                        "age": "$.buddy[*].profile.age",
-                        "email": "$.buddy[*].id"
-                    }],
-                    "token": "$.token",
-                    "balance": "$.balance",
-                    "permissions": ["$.permissions[*]"],
-                    "shortValue": "$.config.shortValue",
-                    "id": "$.id",
-                    "age": "$.age",
-                    "timestamp": "$.config.timestamp",
-                    "longitude": "$.config.longitude",
-                    "byteValue": "$.config.byteValue"
-                }
-                """;
+                        {
+                            "charValue": "$.config.charValue",
+                            "latitude": "$.config.latitude",
+                            "roles": ["$.roles[*].value"],
+                            "active": "$.active",
+                            "friends": [{
+                                "name": "$.buddy[*].profile.name",
+                                "age": "$.buddy[*].profile.age",
+                                "email": "$.buddy[*].id"
+                            }],
+                            "token": "$.token",
+                            "balance": "$.balance",
+                            "permissions": ["$.permissions[*]"],
+                            "shortValue": "$.config.shortValue",
+                            "id": "$.id",
+                            "age": "$.age",
+                            "timestamp": "$.config.timestamp",
+                            "longitude": "$.config.longitude",
+                            "byteValue": "$.config.byteValue"
+                        }
+                        """;
         ISchemaPath schemaPath = SchemaParser.parsePath(getFactory().create(), schemaPathJson);
         Assertions.assertNotNull(schemaPath);
         Assertions.assertEquals(
                 getFactory().create().writeTree(getFactory().create().readTree(schemaPathJson)),
                 getFactory().create().writeValueAsString(schemaPath.toSerializableFormat()));
+
+        // schema, schemaPath
+        boolean schemaMatch = SchemaOperator.schemaMatch(schema, schemaPath);
+        Assertions.assertTrue(schemaMatch);
+
         String parseJson =
                 """
-                {
-                    "id": 1,
-                    "age": 30,
-                    "token": "abc123",
-                    "balance": 100,
-                    "active": true,
-                    "config": {
-                        "timestamp": 1234567890,
-                        "latitude": 1.0,
-                        "longitude": 1.0,
-                        "shortValue": 1,
-                        "byteValue": 1,
-                        "charValue": "a"
-                    },
-                    "roles": [{
-                            "value": 1
-                        },
                         {
-                            "value": 2
-                        },
-                        {
-                            "value": 3
-                        }
-                    ],
-                    "buddy": [{
-                            "id": "john.ivy@example.com",
-                            "profile": {
-                                "name": "John",
-                                "age": 30
-                            }
-                        },
-                        {
-                            "id": "jane.li@company.com",
-                            "profile": {
-                                "name": "Jane",
-                                "age": 25
-                            }
-                        }
-                    ],
-                    "permissions": [
-                        "read",
-                        "write"
-                    ]
-                } """;
+                            "id": 1,
+                            "age": 30,
+                            "token": "abc123",
+                            "balance": 100,
+                            "active": true,
+                            "config": {
+                                "timestamp": 1234567890,
+                                "latitude": 1.0,
+                                "longitude": 1.0,
+                                "shortValue": 1,
+                                "byteValue": 1,
+                                "charValue": "a"
+                            },
+                            "roles": [{
+                                    "value": 1
+                                },
+                                {
+                                    "value": 2
+                                },
+                                {
+                                    "value": 3
+                                }
+                            ],
+                            "buddy": [{
+                                    "id": "john.ivy@example.com",
+                                    "profile": {
+                                        "name": "John",
+                                        "age": 30
+                                    }
+                                },
+                                {
+                                    "id": "jane.li@company.com",
+                                    "profile": {
+                                        "name": "Jane",
+                                        "age": 25
+                                    }
+                                }
+                            ],
+                            "permissions": [
+                                "read",
+                                "write"
+                            ]
+                        } """;
         ISchemaValue schemaValue =
                 SchemaOperator.evaluateValue(schema, schemaPath, getFactory(), parseJson);
         System.out.println("Evaluate Value:");
@@ -192,30 +197,30 @@ abstract class SchemaOperatorTest {
 
         String expectedJson =
                 """
-                {
-                    "charValue": "a",
-                    "latitude": 1.0,
-                    "roles": [1, 2, 3],
-                    "active": true,
-                    "friends": [{
-                        "name": "John",
-                        "age": 30,
-                        "email": "john.ivy@example.com"
-                    }, {
-                        "name": "Jane",
-                        "age": 25,
-                        "email": "jane.li@company.com"
-                    }],
-                    "token": "abc123",
-                    "balance": 100,
-                    "permissions": ["read", "write"],
-                    "shortValue": 1,
-                    "id": 1,
-                    "age": 30,
-                    "timestamp": 1234567890,
-                    "longitude": 1.0,
-                    "byteValue": 1
-                }
+                        {
+                            "charValue": "a",
+                            "latitude": 1.0,
+                            "roles": [1, 2, 3],
+                            "active": true,
+                            "friends": [{
+                                "name": "John",
+                                "age": 30,
+                                "email": "john.ivy@example.com"
+                            }, {
+                                "name": "Jane",
+                                "age": 25,
+                                "email": "jane.li@company.com"
+                            }],
+                            "token": "abc123",
+                            "balance": 100,
+                            "permissions": ["read", "write"],
+                            "shortValue": 1,
+                            "id": 1,
+                            "age": 30,
+                            "timestamp": 1234567890,
+                            "longitude": 1.0,
+                            "byteValue": 1
+                        }
                         """;
         Assertions.assertEquals(
                 getFactory().create().writeTree(getFactory().create().readTree(expectedJson)),

@@ -5,7 +5,6 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -17,6 +16,8 @@ import io.github.roiocam.jsm.api.ISchemaPath;
 import io.github.roiocam.jsm.api.ISchemaValue;
 import io.github.roiocam.jsm.facade.JSONFactory;
 import io.github.roiocam.jsm.facade.JSONPathContext;
+import io.github.roiocam.jsm.reflect.ClassFields;
+import io.github.roiocam.jsm.reflect.ReflectUtils;
 import io.github.roiocam.jsm.schema.SchemaTypeMetadata;
 import io.github.roiocam.jsm.schema.array.ArraySchemaNode;
 import io.github.roiocam.jsm.schema.array.ArraySchemaPath;
@@ -72,11 +73,10 @@ public class SchemaOperator {
         // Object Node
         try {
             ObjSchemaNode current = new ObjSchemaNode(clz, parent);
-            Map<String, Field> fieldsMap = getFields(clz);
-            for (Map.Entry<String, Field> entry : fieldsMap.entrySet()) {
-                Field field = entry.getValue();
-                String fieldName = entry.getKey();
-                Class<?> fieldType = field.getType();
+            ClassFields classFields = ReflectUtils.getClassFields(clz);
+            for (String fieldName : classFields.getFieldNames()) {
+                Field field = classFields.getField(fieldName);
+                Class<?> fieldType = classFields.getFieldType(fieldName);
                 SchemaTypeMetadata metadata = SchemaTypeMetadata.fromClass(fieldType);
                 // Nested object
                 if (metadata == null) {
@@ -101,16 +101,10 @@ public class SchemaOperator {
                     }
                     // Collection type
                     if (field.getGenericType() instanceof ParameterizedType) {
-                        ParameterizedType parameterizedType =
-                                (ParameterizedType) field.getGenericType();
-                        Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
-                        if (actualTypeArguments.length > 0
-                                && actualTypeArguments[0] instanceof Class) {
-                            Class<?> listElementClass = (Class<?>) actualTypeArguments[0];
-                            ArraySchemaNode arraySchemaNode =
-                                    getArraySchemaNode(fieldType, listElementClass, current);
-                            current.addChild(fieldName, arraySchemaNode);
-                        }
+                        Class<?> parameterizedType = classFields.getParameterizedType(fieldName);
+                        ArraySchemaNode arraySchemaNode =
+                                getArraySchemaNode(fieldType, parameterizedType, current);
+                        current.addChild(fieldName, arraySchemaNode);
                         continue;
                     }
                 }
@@ -260,10 +254,10 @@ public class SchemaOperator {
      * Processes the schema to generate a Java object.
      *
      * @param schema The schema definition.
-     * @param path The path to the JSON data.
-     * @param ctx The JSONPath context for evaluating JSON data.
-     * @param clazz The target class type to instantiate.
-     * @param <T> The generic type of the target object.
+     * @param path   The path to the JSON data.
+     * @param ctx    The JSONPath context for evaluating JSON data.
+     * @param clazz  The target class type to instantiate.
+     * @param <T>    The generic type of the target object.
      * @return The constructed Java object.
      */
     private static <T> T evaluateObject(
@@ -271,8 +265,7 @@ public class SchemaOperator {
             throws NoSuchMethodException,
                     InvocationTargetException,
                     InstantiationException,
-                    IllegalAccessException,
-                    NoSuchFieldException {
+                    IllegalAccessException {
 
         if (!schemaMatch(schema, path)) {
             throw new IllegalArgumentException("Schema and path do not match");
@@ -336,14 +329,11 @@ public class SchemaOperator {
                         i++) {
 
                     Object obj = parentClz.getConstructor().newInstance();
-                    Map<String, Field> fieldMap = getFields(parentClz);
-                    if (fieldMap.size() != mapping.size()) {
-                        throw new IllegalArgumentException("Field size not match");
-                    }
+                    ClassFields classFields = ReflectUtils.getClassFields(parentClz);
                     for (Map.Entry<String, Collection<?>> entry : mapping.entrySet()) {
                         Collection<?> child = entry.getValue();
                         Object[] childArray = child.toArray();
-                        Field field = fieldMap.get(entry.getKey());
+                        Field field = classFields.getField(entry.getKey());
                         if (child.size() > i) {
                             setFieldValue(obj, field, childArray[i]);
                         }
@@ -356,10 +346,7 @@ public class SchemaOperator {
                 // Create an instance of the class
                 T obj = clazz.getConstructor().newInstance();
 
-                Map<String, Field> fieldMap = getFields(clazz);
-                if (fieldMap.size() != schemaChildren.size()) {
-                    throw new IllegalArgumentException("Field size not match");
-                }
+                ClassFields classFields = ReflectUtils.getClassFields(clazz);
                 // For each child node, recursively parse and set the value
                 for (Map.Entry<String, ISchemaNode> entry : schemaChildren.entrySet()) {
                     String fieldName = entry.getKey();
@@ -367,8 +354,11 @@ public class SchemaOperator {
                     ISchemaPath childPath = pathChildren.get(fieldName);
 
                     // Determine the field's type via reflection
-                    Field field = fieldMap.get(fieldName);
-                    Class<?> fieldType = field.getType();
+                    if (!classFields.containsField(fieldName)) {
+                        throw new IllegalArgumentException("Field not found: " + fieldName);
+                    }
+                    Field field = classFields.getField(fieldName);
+                    Class<?> fieldType = classFields.getFieldType(fieldName);
 
                     // Recursively process the child object
                     Object childValue = evaluateObject(childSchema, childPath, ctx, fieldType);
@@ -470,31 +460,6 @@ public class SchemaOperator {
             field.set(obj, value);
         } catch (IllegalAccessException e) {
             throw new RuntimeException("Error setting field value", e);
-        }
-    }
-
-    /**
-     * Get all fields from the class and its super class
-     *
-     * @param clz the class
-     * @return a map of field name to field
-     */
-    private static Map<String, Field> getFields(Class<?> clz) {
-        Map<String, Field> fieldCacheMap = new HashMap<>();
-        getFields(clz, fieldCacheMap);
-        return fieldCacheMap;
-    }
-
-    private static void getFields(Class<?> clz, Map<String, Field> fieldCacheMap) {
-        Field[] fields = clz.getDeclaredFields();
-        for (Field field : fields) {
-            String fieldName = field.getName();
-            if (!fieldCacheMap.containsKey(fieldName)) {
-                fieldCacheMap.put(fieldName, field);
-            }
-        }
-        if (clz.getSuperclass() != null && clz.getSuperclass() != Object.class) {
-            getFields(clz.getSuperclass(), fieldCacheMap);
         }
     }
 }
