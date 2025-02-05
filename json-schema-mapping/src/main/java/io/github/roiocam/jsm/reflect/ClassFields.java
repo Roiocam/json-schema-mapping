@@ -8,8 +8,8 @@ import java.util.Map;
 import java.util.Set;
 
 public class ClassFields {
-    private Map<String, Field> fieldMap;
-    private Map<String, TypeInfo> fieldTypeMap;
+    private Map<String, Field> fieldMap = new HashMap<>();
+    private Map<String, TypeInfo> fieldTypeMap = new HashMap<>();
 
     public Set<String> getFieldNames() {
         HashSet<String> res = new HashSet<>(fieldMap.keySet());
@@ -23,12 +23,6 @@ public class ClassFields {
 
     public void putField(
             String fieldName, Field field, Class<?> fieldType, Class<?> parameterizedType) {
-        if (fieldMap == null) {
-            fieldMap = new HashMap<>();
-        }
-        if (fieldTypeMap == null) {
-            fieldTypeMap = new HashMap<>();
-        }
         fieldMap.put(fieldName, field);
         if (parameterizedType != null) {
             fieldTypeMap.put(fieldName, new TypeInfo(fieldType, parameterizedType));
