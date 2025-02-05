@@ -10,5 +10,6 @@
     </parent>
     
     <artifactId>json-facade</artifactId>
-    
+    <description>JSON Schema Mapping Facade</description>
+
 </project>

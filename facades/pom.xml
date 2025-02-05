@@ -11,7 +11,8 @@
     
     <artifactId>facades</artifactId>
     <packaging>pom</packaging>
-    
+    <description>JSON Facade Parent POM</description>
+
     <modules>
         <module>json-facade-fastjson</module>
         <module>json-facade-jackson</module>

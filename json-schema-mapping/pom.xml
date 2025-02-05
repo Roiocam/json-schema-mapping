@@ -10,7 +10,8 @@
     </parent>
     
     <artifactId>json-schema-mapping</artifactId>
-    
+    <description>JSON Schema Mapping core library</description>
+
     <dependencies>
         <dependency>
             <groupId>io.github.roiocam</groupId>

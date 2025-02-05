@@ -9,7 +9,8 @@
     <packaging>pom</packaging>
     <url>https://github.com/Roiocam/json-schema-mapping/</url>
     <inceptionYear>2025</inceptionYear>
-    
+    <description>JSON Schema Mapping Parent POM</description>
+
     <licenses>
         <license>
             <name>The Apache Software License, Version 2.0</name>
