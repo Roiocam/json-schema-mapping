@@ -11,7 +11,7 @@
     
     <artifactId>json-facade-jackson</artifactId>
     <description>JSON Schema Mapping jackson support</description>
-
+    
     <dependencies>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>

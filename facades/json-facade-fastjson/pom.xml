@@ -11,7 +11,7 @@
     
     <artifactId>json-facade-fastjson</artifactId>
     <description>JSON Schema Mapping fastjson support</description>
-
+    
     <dependencies>
         <dependency>
             <groupId>com.alibaba</groupId>
