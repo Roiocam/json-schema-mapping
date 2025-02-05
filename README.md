@@ -8,7 +8,7 @@ Support both structured and flatten schema.
 ---------------------------------------------------------------------------------------------------------
 Schema:                                                  |  Schema Example:
 {                                                        |  {
-    "type" : "com.roiocam.jsm.tools.User",               |      "user" : {                                               
+    "type" : "io.github.roiocam.jsm.tools.User",               |      "user" : {                                               
     "user" : {                                           |          "name" : "$.",
         "name" : "string",                               |          "age" : "$.",                
         "age" : "int",                                   |          "email" : "$."            
