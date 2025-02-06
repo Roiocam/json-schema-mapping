@@ -4,14 +4,13 @@ package io.github.roiocam.jsm.jackson;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
-import java.util.regex.Matcher;
 
 import com.jayway.jsonpath.PathNotFoundException;
 import com.jayway.jsonpath.ReadContext;
 import io.github.roiocam.jsm.facade.JSONPathContext;
 import io.github.roiocam.jsm.facade.JSONTools;
 
-public class JacksonPathContext implements JSONPathContext {
+public class JacksonPathContext extends JSONPathContext {
     private final ReadContext ctx;
     private final JSONTools jsonTools;
 
@@ -21,20 +20,17 @@ public class JacksonPathContext implements JSONPathContext {
     }
 
     @Override
-    public <T> T read(String path, Class<T> type) {
-        Matcher matcher = PATTERN.matcher(path);
-        if (matcher.find()) {
-            String group = matcher.group(2);
-            if (type.equals(String.class)) {
-                return (T) group;
-            }
-            return jsonTools.readValue(group, type);
-        }
+    protected <T> T jsonParseObject(String value, Class<T> type) {
+        return jsonTools.readValue(value, type);
+    }
+
+    @Override
+    protected <T> T jsonPathRead(String path, Class<T> type) {
         return readValue(path, type);
     }
 
     @Override
-    public <T, R> T readArray(String path, Class<T> type, Class<R> elementType) {
+    protected <T, R> T jsonPathReadArray(String path, Class<T> type, Class<R> elementType) {
         Object read = readValue(path, type);
         if (read != null && !Collection.class.isAssignableFrom(type)) {
             throw new IllegalStateException("JSON Path read values does not an array.");

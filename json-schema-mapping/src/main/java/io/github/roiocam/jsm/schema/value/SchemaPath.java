@@ -2,7 +2,7 @@
 package io.github.roiocam.jsm.schema.value;
 
 import io.github.roiocam.jsm.api.ISchemaPath;
-import io.github.roiocam.jsm.tools.PathValidator;
+import io.github.roiocam.jsm.facade.PathValidator;
 
 public class SchemaPath extends SchemaValue<String> implements ISchemaPath {
 

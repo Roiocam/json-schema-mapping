@@ -6,14 +6,13 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Matcher;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONPath;
 import io.github.roiocam.jsm.facade.JSONPathContext;
 
-public class FastjsonPathContext implements JSONPathContext {
+public class FastjsonPathContext extends JSONPathContext {
     private final String json;
 
     public FastjsonPathContext(String json) {
@@ -21,20 +20,17 @@ public class FastjsonPathContext implements JSONPathContext {
     }
 
     @Override
-    public <T> T read(String path, Class<T> type) {
-        Matcher matcher = PATTERN.matcher(path);
-        if (matcher.find()) {
-            String group = matcher.group(2);
-            if (type.equals(String.class)) {
-                return (T) group;
-            }
-            return JSON.parseObject(group, type);
-        }
+    protected <T> T jsonParseObject(String value, Class<T> type) {
+        return JSON.parseObject(value, type);
+    }
+
+    @Override
+    protected <T> T jsonPathRead(String path, Class<T> type) {
         return JSONPath.read(json, path, type);
     }
 
     @Override
-    public <T, R> T readArray(String path, Class<T> type, Class<R> elementType) {
+    protected <T, R> T jsonPathReadArray(String path, Class<T> type, Class<R> elementType) {
         Object read = JSONPath.read(json, path);
         if (read != null && !(read instanceof JSONArray)) {
             throw new IllegalStateException("JSON Path read values does not an array.");

@@ -274,7 +274,7 @@ abstract class SchemaOperatorTest {
                             "active": "$.active",
                             "friends": [],
                             "token": "$.token",
-                            "balance": "!!!100!!!",
+                            "balance": "$.balance",
                             "permissions": [],
                             "shortValue": "$.config.shortValue",
                             "id": "$.id",
@@ -470,6 +470,127 @@ abstract class SchemaOperatorTest {
                             "timestamp": 123123123,
                             "longitude": 1.0,
                             "byteValue": 1
+                        }
+                        """;
+        Assertions.assertEquals(
+                getFactory().create().writeTree(getFactory().create().readTree(expectedJson)),
+                getFactory().create().writeValueAsString(valueSerializableFormat));
+    }
+
+    @Test
+    public void allow_condition_path() {
+        // Generate schema
+        ISchemaNode schema = SchemaOperator.generateSchema(ComplexUser.class);
+
+        // Schema path
+        String schemaPathJson =
+                """
+                        {
+                            "charValue": "$.config.charValue",
+                            "latitude": "$.config.latitude",
+                            "roles": ["$.roles[*].value"],
+                            "active": "$.active",
+                            "friends": [{
+                                "name": "$.buddy[*].profile.name",
+                                "age": "?<$.buddy[*].profile.age> {>=18: 18} {$}",
+                                "email": "$.buddy[*].id"
+                            }],
+                            "token": "$.token",
+                            "balance": "$.balance",
+                            "permissions": ["$.permissions[*]"],
+                            "shortValue": "$.config.shortValue",
+                            "id": "?<$.id> {>1: 1} {<1: 0} {==1: 2} {3}",
+                            "age":"?<$.age> {>=18: 18} {0}",
+                            "timestamp": "$.config.timestamp",
+                            "longitude": "$.config.longitude",
+                            "byteValue": "$.config.byteValue"
+                        }
+                        """;
+        ISchemaPath schemaPath = SchemaParser.parsePath(getFactory().create(), schemaPathJson);
+        Assertions.assertNotNull(schemaPath);
+        Assertions.assertEquals(
+                getFactory().create().writeTree(getFactory().create().readTree(schemaPathJson)),
+                getFactory().create().writeValueAsString(schemaPath.toSerializableFormat()));
+
+        // schema, schemaPath
+        boolean schemaMatch = SchemaOperator.schemaMatch(schema, schemaPath);
+        Assertions.assertTrue(schemaMatch);
+
+        String parseJson =
+                """
+                        {
+                            "id": 1,
+                            "age": 30,
+                            "token": "abc123",
+                            "balance": 100,
+                            "active": true,
+                            "config": {
+                                "timestamp": 1234567890,
+                                "latitude": 1.0,
+                                "longitude": 1.0,
+                                "shortValue": 1,
+                                "byteValue": 1,
+                                "charValue": "a"
+                            },
+                            "roles": [{
+                                    "value": 1
+                                },
+                                {
+                                    "value": 2
+                                },
+                                {
+                                    "value": 3
+                                }
+                            ],
+                            "buddy": [{
+                                    "id": "john.ivy@example.com",
+                                    "profile": {
+                                        "name": "John",
+                                        "age": 12
+                                    }
+                                },
+                                {
+                                    "id": "jane.li@company.com",
+                                    "profile": {
+                                        "name": "Jane",
+                                        "age": 25
+                                    }
+                                }
+                            ],
+                            "permissions": [
+                                "read",
+                                "write"
+                            ]
+                        } """;
+        ISchemaValue schemaValue =
+                SchemaOperator.evaluateValue(schema, schemaPath, getFactory(), parseJson);
+        Object valueSerializableFormat = schemaValue.toSerializableFormat();
+
+        String expectedJson =
+                """
+                        {
+                        	"charValue": "a",
+                        	"latitude": 1.0,
+                        	"roles": [1, 2, 3],
+                        	"active": true,
+                        	"friends": [{
+                        		"name": "John",
+                        		"age": 12,
+                        		"email": "john.ivy@example.com"
+                        	}, {
+                        		"name": "Jane",
+                        		"age": 18,
+                        		"email": "jane.li@company.com"
+                        	}],
+                        	"token": "abc123",
+                        	"balance": 100,
+                        	"permissions": ["read", "write"],
+                        	"shortValue": 1,
+                        	"id": 2,
+                        	"age": 18,
+                        	"timestamp": 1234567890,
+                        	"longitude": 1.0,
+                        	"byteValue": 1
                         }
                         """;
         Assertions.assertEquals(
