@@ -2,6 +2,8 @@
 package io.github.roiocam.jsm.jackson;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
 import java.util.regex.Matcher;
 
 import com.jayway.jsonpath.ReadContext;
@@ -34,10 +36,18 @@ public class JacksonPathContext implements JSONPathContext {
     @Override
     public <T, R> T readArray(String path, Class<T> type, Class<R> elementType) {
         Object read = ctx.read(path, type);
-        if (!Collection.class.isAssignableFrom(type)) {
+        if (read != null && !Collection.class.isAssignableFrom(type)) {
             throw new IllegalStateException("JSON Path read values does not an array.");
         }
-
+        if (read == null) {
+            if (Set.class.isAssignableFrom(type)) {
+                return (T) Collections.emptySet();
+            } else if (type.isArray()) {
+                return (T) new Object[0];
+            } else {
+                return (T) Collections.emptyList();
+            }
+        }
         Collection<?> collection = (Collection<?>) read;
         for (Object ele : collection) {
             if (!ele.getClass().isAssignableFrom(elementType)) {

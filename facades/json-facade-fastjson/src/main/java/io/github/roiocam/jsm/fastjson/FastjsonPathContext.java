@@ -36,10 +36,9 @@ public class FastjsonPathContext implements JSONPathContext {
     @Override
     public <T, R> T readArray(String path, Class<T> type, Class<R> elementType) {
         Object read = JSONPath.read(json, path);
-        if (!(read instanceof JSONArray)) {
+        if (read != null && !(read instanceof JSONArray)) {
             throw new IllegalStateException("JSON Path read values does not an array.");
         }
-        JSONArray array = (JSONArray) read;
         Collection<R> res;
         if (List.class.isAssignableFrom(type) || type.isArray() || type.equals(Collection.class)) {
             res = new ArrayList<>();
@@ -48,7 +47,10 @@ public class FastjsonPathContext implements JSONPathContext {
         } else {
             throw new UnsupportedOperationException("Unsupported collection type");
         }
-
+        if (read == null) {
+            return (T) res;
+        }
+        JSONArray array = (JSONArray) read;
         for (Object ele : array) {
             if (!ele.getClass().isAssignableFrom(elementType)) {
                 throw new IllegalStateException("array element had the difference type");

@@ -7,9 +7,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import io.github.roiocam.jsm.api.ISchemaNode;
 import io.github.roiocam.jsm.api.ISchemaPath;
@@ -149,6 +151,9 @@ public class SchemaOperator {
             ArraySchemaNode arraySchema = (ArraySchemaNode) schema;
             ArraySchemaPath arrayPath = (ArraySchemaPath) path;
             ISchemaNode eleNode = arraySchema.getParamType();
+            if (arrayPath.getValue().isEmpty()) {
+                return schemaValue;
+            }
             ISchemaPath elePath = arrayPath.getValue().get(0);
             evaluateValue(eleNode, elePath, ctx, schemaValue);
             return schemaValue;
@@ -174,14 +179,13 @@ public class SchemaOperator {
                     evaluateValue(childSchema, childPath, ctx, child);
                     mapping.put(fieldName, child);
                 }
+                int length =
+                        mapping.values().stream()
+                                .mapToInt(e -> e.getValue().size())
+                                .max()
+                                .orElse(-1);
                 // then merge all data
-                for (int i = 0;
-                        i
-                                < mapping.values().stream()
-                                        .mapToInt(e -> e.getValue().size())
-                                        .max()
-                                        .orElse(0);
-                        i++) {
+                for (int i = 0; i < length; i++) {
                     ObjSchemaValue<ISchemaValue> schemaValue = new ObjSchemaValue<>(parent);
                     for (Map.Entry<String, ArraySchemaValue> entry : mapping.entrySet()) {
                         ArraySchemaValue child = entry.getValue();
@@ -281,9 +285,12 @@ public class SchemaOperator {
             ArraySchemaPath arrayPath = (ArraySchemaPath) path;
             Class<?> arrayType = arraySchema.getValue();
             ISchemaNode eleNode = arraySchema.getParamType();
-            ISchemaPath elePath = arrayPath.getValue().get(0);
 
             if (clazz.isArray()) {
+                if (arrayPath.getValue().isEmpty()) {
+                    return (T) Array.newInstance(clazz.getComponentType(), 0);
+                }
+                ISchemaPath elePath = arrayPath.getValue().get(0);
                 // Process each element in the array
                 Collection<?> collection = evaluateObject(eleNode, elePath, ctx, Collection.class);
 
@@ -295,6 +302,13 @@ public class SchemaOperator {
                 }
                 return (T) array;
             } else {
+                if (arrayPath.getValue().isEmpty()) {
+                    if (Set.class.isAssignableFrom(clazz)) {
+                        return (T) Collections.emptySet();
+                    }
+                    return (T) Collections.emptyList();
+                }
+                ISchemaPath elePath = arrayPath.getValue().get(0);
                 // Process each element in the array
                 Object collection = evaluateObject(eleNode, elePath, ctx, arrayType);
                 return (T) collection;
@@ -324,10 +338,8 @@ public class SchemaOperator {
                 // then merge all data
                 List<Object> result = new ArrayList<>();
                 Class<?> parentClz = objSchema.getValue();
-                for (int i = 0;
-                        i < mapping.values().stream().mapToInt(Collection::size).max().orElse(0);
-                        i++) {
-
+                int length = mapping.values().stream().mapToInt(Collection::size).max().orElse(-1);
+                for (int i = 0; i < length; i++) {
                     Object obj = parentClz.getConstructor().newInstance();
                     ClassFields classFields = ReflectUtils.getClassFields(parentClz);
                     for (Map.Entry<String, Collection<?>> entry : mapping.entrySet()) {
@@ -404,11 +416,8 @@ public class SchemaOperator {
             }
             ISchemaNode schemaNode = ((ArraySchemaNode) schema).getParamType();
             List<ISchemaPath> value = ((ArraySchemaPath) path).getValue();
-            // array must be one element
-            if (value.size() != 1) {
-                return Boolean.FALSE;
-            }
-            return schemaMatch(schemaNode, value.get(0));
+            // array must be one element or empty
+            return value.isEmpty() || (value.size() == 1 && schemaMatch(schemaNode, value.get(0)));
         }
         // 2. check if the obj schema and obj path are the same.
         if (schema instanceof ObjSchemaNode) {
