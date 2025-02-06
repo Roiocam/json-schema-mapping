@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.regex.Matcher;
 
+import com.jayway.jsonpath.PathNotFoundException;
 import com.jayway.jsonpath.ReadContext;
 import io.github.roiocam.jsm.facade.JSONPathContext;
 import io.github.roiocam.jsm.facade.JSONTools;
@@ -29,13 +30,12 @@ public class JacksonPathContext implements JSONPathContext {
             }
             return jsonTools.readValue(group, type);
         }
-        Object value = ctx.read(path, type);
-        return (T) value;
+        return readValue(path, type);
     }
 
     @Override
     public <T, R> T readArray(String path, Class<T> type, Class<R> elementType) {
-        Object read = ctx.read(path, type);
+        Object read = readValue(path, type);
         if (read != null && !Collection.class.isAssignableFrom(type)) {
             throw new IllegalStateException("JSON Path read values does not an array.");
         }
@@ -55,5 +55,13 @@ public class JacksonPathContext implements JSONPathContext {
             }
         }
         return (T) read;
+    }
+
+    private <T> T readValue(String path, Class<T> type) {
+        try {
+            return ctx.read(path, type);
+        } catch (PathNotFoundException e) {
+            return null;
+        }
     }
 }

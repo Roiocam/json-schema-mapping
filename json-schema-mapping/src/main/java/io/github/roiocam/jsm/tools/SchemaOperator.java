@@ -355,6 +355,20 @@ public class SchemaOperator {
                 return (T) result;
 
             } else {
+                // FIXME handle the case that clazz is Map for now
+                if (clazz.isAssignableFrom(Map.class)) {
+                    Map<String, Object> result = new HashMap<>();
+                    for (Map.Entry<String, ISchemaNode> entry : schemaChildren.entrySet()) {
+                        String fieldName = entry.getKey();
+                        ISchemaNode childSchema = entry.getValue();
+                        ISchemaPath childPath = pathChildren.get(fieldName);
+                        // Recursively process the child object
+                        Object childValue =
+                                evaluateObject(childSchema, childPath, ctx, Object.class);
+                        result.put(fieldName, childValue);
+                    }
+                    return (T) result;
+                }
                 // Create an instance of the class
                 T obj = clazz.getConstructor().newInstance();
 
