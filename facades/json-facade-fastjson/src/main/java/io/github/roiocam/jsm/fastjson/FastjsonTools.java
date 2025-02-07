@@ -10,7 +10,11 @@ public class FastjsonTools implements JSONTools {
 
     @Override
     public JSONNode readTree(String json) {
-        return new FastjsonNode(JSON.parseObject(json));
+        Object parse = JSON.parse(json);
+        if (!(parse instanceof JSON)) {
+            throw new IllegalStateException("Unknown type of JSON object");
+        }
+        return new FastjsonNode((JSON) parse);
     }
 
     @Override

@@ -75,6 +75,11 @@ public class FastjsonNode implements JSONNode {
     }
 
     @Override
+    public String toJSONString() {
+        return jsonObject.toJSONString();
+    }
+
+    @Override
     public String asValue() {
         throw new IllegalStateException("Fastjson node can not be value, it is always map");
     }

@@ -52,4 +52,9 @@ public class TextNode implements JSONNode {
     public Iterator<JSONNode> elements() {
         throw new IllegalStateException("TextNode is not an array");
     }
+
+    @Override
+    public String toJSONString() {
+        return value;
+    }
 }

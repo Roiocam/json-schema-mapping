@@ -55,6 +55,13 @@ public class JacksonPathContext extends JSONPathContext {
 
     private <T> T readValue(String path, Class<T> type) {
         try {
+            Object result = ctx.read(path);
+            if (type.isAssignableFrom(result.getClass())) {
+                return (T) result;
+            }
+            if (type.isAssignableFrom(String.class)) {
+                return (T) jsonTools.writeValueAsString(result);
+            }
             return ctx.read(path, type);
         } catch (PathNotFoundException e) {
             return null;

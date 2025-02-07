@@ -20,4 +20,6 @@ public interface JSONNode {
     boolean isArray();
 
     Iterator<JSONNode> elements();
+
+    String toJSONString();
 }

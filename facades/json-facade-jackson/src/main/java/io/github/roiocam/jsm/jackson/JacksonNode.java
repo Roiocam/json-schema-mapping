@@ -129,4 +129,9 @@ public class JacksonNode implements JSONNode {
             }
         };
     }
+
+    @Override
+    public String toJSONString() {
+        return node.toString();
+    }
 }

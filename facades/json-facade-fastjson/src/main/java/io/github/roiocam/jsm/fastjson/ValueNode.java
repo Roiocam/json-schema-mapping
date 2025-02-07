@@ -52,4 +52,9 @@ public class ValueNode implements JSONNode {
     public Iterator<JSONNode> elements() {
         throw new IllegalStateException("ValueNode is not an array");
     }
+
+    @Override
+    public String toJSONString() {
+        return object.toString();
+    }
 }
