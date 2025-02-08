@@ -19,15 +19,12 @@ abstract class ITTest {
         // 1. generate schema from a Java object
         ISchemaNode schema = SchemaOperator.generateSchema(User.class);
         System.out.println("Schema:");
-        System.out.println(
-                getFactory().create().writeValueAsString(schema.toSerializableFormat(), true));
+        System.out.println(getFactory().create().writeValueAsString(schema, true));
         divider();
 
         System.out.println("Schema Example:");
         System.out.println(
-                getFactory()
-                        .create()
-                        .writeValueAsString(schema.generateExample().toSerializableFormat(), true));
+                getFactory().create().writeValueAsString(schema.generateExample(), true));
         divider();
 
         // 2. parse a JSON string to a SchemaPath
@@ -45,8 +42,7 @@ abstract class ITTest {
         ISchemaPath path = SchemaParser.parsePath(getFactory().create(), pathJson);
         Assertions.assertNotNull(path);
         System.out.println("Schema Path:");
-        System.out.println(
-                getFactory().create().writeValueAsString(path.toSerializableFormat(), true));
+        System.out.println(getFactory().create().writeValueAsString(path, true));
         divider();
 
         // 3. verify the SchemaPath is match to the SchemaNode
@@ -71,8 +67,7 @@ abstract class ITTest {
 
         ISchemaValue value = SchemaOperator.evaluateValue(schema, path, getFactory(), outerJson);
         System.out.println("Evaluate Value:");
-        System.out.println(
-                getFactory().create().writeValueAsString(value.toSerializableFormat(), true));
+        System.out.println(getFactory().create().writeValueAsString(value, true));
         divider();
 
         // 6. evaluate the value to a Java object
@@ -97,8 +92,7 @@ abstract class ITTest {
         ISchemaValue parsedValue = SchemaParser.parseValue(getFactory().create(), parseJson);
         Assertions.assertNotNull(parsedValue);
         System.out.println("Parsed Value:");
-        System.out.println(
-                getFactory().create().writeValueAsString(parsedValue.toSerializableFormat(), true));
+        System.out.println(getFactory().create().writeValueAsString(parsedValue, true));
         divider();
 
         //            // 8. flatten the key map
@@ -113,9 +107,9 @@ abstract class ITTest {
         // User.class);
         //            Assertions.assertEquals(
         //
-        // getFactory().create().writeValueAsString(flattenSchema.toSerializableFormat()),
+        // getFactory().create().writeValueAsString(flattenSchema),
         //
-        // getFactory().create().writeValueAsString(schema.toSerializableFormat()));
+        // getFactory().create().writeValueAsString(schema));
         //
         //            // 10. flatten the key map with prefix
         //            String flattenMappingJson =
@@ -140,9 +134,9 @@ abstract class ITTest {
         // SchemaParser.parseFlattenPath(flattenMapping);
         //            Assertions.assertEquals(
         //
-        // getFactory().create().writeValueAsString(flattenMappingPath.toSerializableFormat()),
+        // getFactory().create().writeValueAsString(flattenMappingPath),
         //
-        // getFactory().create().writeValueAsString(path.toSerializableFormat()));
+        // getFactory().create().writeValueAsString(path));
     }
 
     private static void divider() {

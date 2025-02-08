@@ -15,6 +15,10 @@
     <dependencies>
         <dependency>
             <groupId>io.github.roiocam</groupId>
+            <artifactId>json-schema-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.github.roiocam</groupId>
             <artifactId>json-facade</artifactId>
         </dependency>
         

@@ -7,6 +7,7 @@ import java.util.Set;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.auto.service.AutoService;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
@@ -15,6 +16,7 @@ import com.jayway.jsonpath.spi.json.JacksonJsonProvider;
 import com.jayway.jsonpath.spi.json.JsonProvider;
 import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
 import com.jayway.jsonpath.spi.mapper.MappingProvider;
+import io.github.roiocam.jsm.api.ISchema;
 import io.github.roiocam.jsm.facade.JSONFactories;
 import io.github.roiocam.jsm.facade.JSONFactory;
 import io.github.roiocam.jsm.facade.JSONPathContext;
@@ -53,6 +55,9 @@ public class JacksonFactory implements JSONFactory, Comparable<JSONFactory> {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         objectMapper.configure(SerializationFeature.WRITE_NULL_MAP_VALUES, false);
+        SimpleModule module = new SimpleModule();
+        module.addSerializer(ISchema.class, new SchemaSerializer());
+        objectMapper.registerModule(module);
         return new JacksonTools(objectMapper);
     }
 

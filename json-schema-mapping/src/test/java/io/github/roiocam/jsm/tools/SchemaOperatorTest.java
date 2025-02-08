@@ -23,16 +23,13 @@ abstract class SchemaOperatorTest {
         ISchemaNode schema = SchemaOperator.generateSchema(User.class);
         // Serialize schema to JSON
         System.out.println("Serialized schema.Schema:");
-        Object serializableForm = schema.toSerializableFormat();
-        String schemaJson = getFactory().create().writeValueAsString(serializableForm, true);
+        String schemaJson = getFactory().create().writeValueAsString(schema, true);
         System.out.println(schemaJson);
 
         // Generate example JSON
         System.out.println("Example JSON:");
         ISchemaExample exampleJson = schema.generateExample();
-        Object serializableForm1 = exampleJson.toSerializableFormat();
-        String exampleJsonString =
-                getFactory().create().writeValueAsString(serializableForm1, true);
+        String exampleJsonString = getFactory().create().writeValueAsString(exampleJson, true);
         System.out.println(exampleJsonString);
 
         String schemaPathJson =
@@ -64,7 +61,6 @@ abstract class SchemaOperatorTest {
                         """;
         ISchemaValue schemaValue =
                 SchemaOperator.evaluateValue(schema, schemaPath, getFactory(), parseJson);
-        Object valueSerializableFormat = schemaValue.toSerializableFormat();
         String expectedJson =
                 """
                         {
@@ -79,7 +75,7 @@ abstract class SchemaOperatorTest {
 
         Assertions.assertEquals(
                 getFactory().create().writeTree(getFactory().create().readTree(expectedJson)),
-                getFactory().create().writeValueAsString(valueSerializableFormat));
+                getFactory().create().writeValueAsString(schemaValue));
 
         User user =
                 SchemaOperator.evaluateObject(
@@ -97,16 +93,13 @@ abstract class SchemaOperatorTest {
         ISchemaNode schema = SchemaOperator.generateSchema(ComplexUser.class);
         // Serialize schema to JSON
         System.out.println("Serialized schema.Schema:");
-        Object serializableForm = schema.toSerializableFormat();
-        String schemaJson = getFactory().create().writeValueAsString(serializableForm, true);
+        String schemaJson = getFactory().create().writeValueAsString(schema, true);
         System.out.println(schemaJson);
 
         // Generate example JSON
         System.out.println("Example JSON:");
         ISchemaExample exampleJson = schema.generateExample();
-        Object serializableForm1 = exampleJson.toSerializableFormat();
-        String exampleJsonString =
-                getFactory().create().writeValueAsString(serializableForm1, true);
+        String exampleJsonString = getFactory().create().writeValueAsString(exampleJson, true);
         System.out.println(exampleJsonString);
 
         // Schema path
@@ -137,7 +130,7 @@ abstract class SchemaOperatorTest {
         Assertions.assertNotNull(schemaPath);
         Assertions.assertEquals(
                 getFactory().create().writeTree(getFactory().create().readTree(schemaPathJson)),
-                getFactory().create().writeValueAsString(schemaPath.toSerializableFormat()));
+                getFactory().create().writeValueAsString(schemaPath));
 
         // schema, schemaPath
         boolean schemaMatch = SchemaOperator.schemaMatch(schema, schemaPath);
@@ -192,8 +185,7 @@ abstract class SchemaOperatorTest {
         ISchemaValue schemaValue =
                 SchemaOperator.evaluateValue(schema, schemaPath, getFactory(), parseJson);
         System.out.println("Evaluate Value:");
-        Object valueSerializableFormat = schemaValue.toSerializableFormat();
-        System.out.println(getFactory().create().writeValueAsString(valueSerializableFormat, true));
+        System.out.println(getFactory().create().writeValueAsString(schemaValue, true));
 
         String expectedJson =
                 """
@@ -224,7 +216,7 @@ abstract class SchemaOperatorTest {
                         """;
         Assertions.assertEquals(
                 getFactory().create().writeTree(getFactory().create().readTree(expectedJson)),
-                getFactory().create().writeValueAsString(valueSerializableFormat));
+                getFactory().create().writeValueAsString(schemaValue));
 
         ComplexUser complexUser =
                 SchemaOperator.evaluateObject(
@@ -288,7 +280,7 @@ abstract class SchemaOperatorTest {
         Assertions.assertNotNull(schemaPath);
         Assertions.assertEquals(
                 getFactory().create().writeTree(getFactory().create().readTree(schemaPathJson)),
-                getFactory().create().writeValueAsString(schemaPath.toSerializableFormat()));
+                getFactory().create().writeValueAsString(schemaPath));
 
         // schema, schemaPath
         boolean schemaMatch = SchemaOperator.schemaMatch(schema, schemaPath);
@@ -342,7 +334,6 @@ abstract class SchemaOperatorTest {
                         } """;
         ISchemaValue schemaValue =
                 SchemaOperator.evaluateValue(schema, schemaPath, getFactory(), parseJson);
-        Object valueSerializableFormat = schemaValue.toSerializableFormat();
 
         String expectedJson =
                 """
@@ -365,7 +356,7 @@ abstract class SchemaOperatorTest {
                         """;
         Assertions.assertEquals(
                 getFactory().create().writeTree(getFactory().create().readTree(expectedJson)),
-                getFactory().create().writeValueAsString(valueSerializableFormat));
+                getFactory().create().writeValueAsString(schemaValue));
     }
 
     @Test
@@ -397,7 +388,7 @@ abstract class SchemaOperatorTest {
         Assertions.assertNotNull(schemaPath);
         Assertions.assertEquals(
                 getFactory().create().writeTree(getFactory().create().readTree(schemaPathJson)),
-                getFactory().create().writeValueAsString(schemaPath.toSerializableFormat()));
+                getFactory().create().writeValueAsString(schemaPath));
 
         // schema, schemaPath
         boolean schemaMatch = SchemaOperator.schemaMatch(schema, schemaPath);
@@ -451,7 +442,6 @@ abstract class SchemaOperatorTest {
                         } """;
         ISchemaValue schemaValue =
                 SchemaOperator.evaluateValue(schema, schemaPath, getFactory(), parseJson);
-        Object valueSerializableFormat = schemaValue.toSerializableFormat();
 
         String expectedJson =
                 """
@@ -474,7 +464,7 @@ abstract class SchemaOperatorTest {
                         """;
         Assertions.assertEquals(
                 getFactory().create().writeTree(getFactory().create().readTree(expectedJson)),
-                getFactory().create().writeValueAsString(valueSerializableFormat));
+                getFactory().create().writeValueAsString(schemaValue));
     }
 
     @Test
@@ -510,7 +500,7 @@ abstract class SchemaOperatorTest {
         Assertions.assertNotNull(schemaPath);
         Assertions.assertEquals(
                 getFactory().create().writeTree(getFactory().create().readTree(schemaPathJson)),
-                getFactory().create().writeValueAsString(schemaPath.toSerializableFormat()));
+                getFactory().create().writeValueAsString(schemaPath));
 
         // schema, schemaPath
         boolean schemaMatch = SchemaOperator.schemaMatch(schema, schemaPath);
@@ -564,7 +554,6 @@ abstract class SchemaOperatorTest {
                         } """;
         ISchemaValue schemaValue =
                 SchemaOperator.evaluateValue(schema, schemaPath, getFactory(), parseJson);
-        Object valueSerializableFormat = schemaValue.toSerializableFormat();
 
         String expectedJson =
                 """
@@ -595,6 +584,6 @@ abstract class SchemaOperatorTest {
                         """;
         Assertions.assertEquals(
                 getFactory().create().writeTree(getFactory().create().readTree(expectedJson)),
-                getFactory().create().writeValueAsString(valueSerializableFormat));
+                getFactory().create().writeValueAsString(schemaValue));
     }
 }

@@ -28,6 +28,7 @@
         </developer>
     </developers>
     <modules>
+        <module>json-schema-core</module>
         <module>json-facade</module>
         <module>json-schema-mapping</module>
         <module>facades</module>
@@ -51,10 +52,16 @@
         <auto-service.version>1.1.1</auto-service.version>
         <guava.version>32.0.1-jre</guava.version>
         <json-smart.version>2.5.1</json-smart.version>
+        <reflections.version>0.10.2</reflections.version>
     </properties>
     
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>io.github.roiocam</groupId>
+                <artifactId>json-schema-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <dependency>
                 <groupId>io.github.roiocam</groupId>
                 <artifactId>json-facade</artifactId>
@@ -111,6 +118,11 @@
                 <groupId>org.junit.jupiter</groupId>
                 <artifactId>junit-jupiter</artifactId>
                 <version>${junit-jupiter.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.reflections</groupId>
+                <artifactId>reflections</artifactId>
+                <version>${reflections.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

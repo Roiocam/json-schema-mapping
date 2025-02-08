@@ -29,19 +29,16 @@ abstract class SchemaParserTest {
         ISchemaNode schemaNode = SchemaParser.parseNode(getFactory().create(), schemaJson);
 
         Assertions.assertNotNull(schemaNode);
-        Object nodeSerializableFormat = schemaNode.toSerializableFormat();
         Assertions.assertEquals(
                 getFactory().create().writeTree(getFactory().create().readTree(schemaJson)),
-                getFactory().create().writeValueAsString(nodeSerializableFormat));
+                getFactory().create().writeValueAsString(schemaNode));
 
         // Generate Example JSON from schema.SchemaNode
         System.out.println("Example JSON:");
         ISchemaExample exampleJson = schemaNode.generateExample();
 
         // Serialize Example JSON
-        Object exampleJsonSerializableFormat = exampleJson.toSerializableFormat();
-        String exampleJsonString =
-                getFactory().create().writeValueAsString(exampleJsonSerializableFormat, true);
+        String exampleJsonString = getFactory().create().writeValueAsString(exampleJson, true);
         System.out.println(exampleJsonString);
 
         String schemaPathJson =
@@ -57,10 +54,9 @@ abstract class SchemaParserTest {
         ISchemaPath schemaPath = SchemaParser.parsePath(getFactory().create(), schemaPathJson);
         Assertions.assertNotNull(schemaPath);
 
-        Object pathSerializableForm = schemaPath.toSerializableFormat();
         Assertions.assertEquals(
                 getFactory().create().writeTree(getFactory().create().readTree(schemaPathJson)),
-                getFactory().create().writeValueAsString(pathSerializableForm));
+                getFactory().create().writeValueAsString(schemaPath));
     }
 
     @Test
@@ -107,8 +103,6 @@ abstract class SchemaParserTest {
         ISchemaValue schemaNode = SchemaParser.parseValue(getFactory().create(), schemaJson);
         Assertions.assertNotNull(schemaNode);
         System.out.println("Example JSON:");
-        Object exampleJsonSerializableFormat = schemaNode.toSerializableFormat();
-        System.out.println(
-                getFactory().create().writeValueAsString(exampleJsonSerializableFormat, true));
+        System.out.println(getFactory().create().writeValueAsString(schemaNode, true));
     }
 }
