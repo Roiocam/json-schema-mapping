@@ -12,4 +12,10 @@
     <artifactId>json-schema-core</artifactId>
     <description>JSON Schema Mapping API library</description>
     
+    <dependencies>
+        <dependency>
+            <groupId>io.github.roiocam</groupId>
+            <artifactId>json-facade</artifactId>
+        </dependency>
+    </dependencies>
 </project>

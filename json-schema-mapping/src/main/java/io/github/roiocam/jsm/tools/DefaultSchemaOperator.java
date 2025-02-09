@@ -13,10 +13,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.auto.service.AutoService;
 import io.github.roiocam.jsm.api.ISchemaNode;
 import io.github.roiocam.jsm.api.ISchemaPath;
 import io.github.roiocam.jsm.api.ISchemaValue;
-import io.github.roiocam.jsm.facade.JSONFactory;
 import io.github.roiocam.jsm.facade.JSONPathContext;
 import io.github.roiocam.jsm.reflect.ClassFields;
 import io.github.roiocam.jsm.reflect.ReflectUtils;
@@ -31,28 +31,15 @@ import io.github.roiocam.jsm.schema.value.SchemaNode;
 import io.github.roiocam.jsm.schema.value.SchemaPath;
 import io.github.roiocam.jsm.schema.value.SchemaValue;
 
-/**
- * Maintainer all schema operation, which only working with objects, won't work with json string.
- */
-public class SchemaOperator {
-
-    /**
-     * Generates a schema and example JSON from a Java object.
-     *
-     * @param obj the Java object
-     * @return a schema.SchemaNode representing the schema
-     */
-    public static ISchemaNode generateSchema(Class<?> obj) {
-        return processObject(obj, null);
+@AutoService({ISchemaOperator.class})
+public class DefaultSchemaOperator implements ISchemaOperator {
+    @Override
+    public int getPriority() {
+        return Integer.MIN_VALUE;
     }
 
-    /**
-     * Processes the Java object to generate schema and example data.
-     *
-     * @param clz the object class to process
-     * @return a schema.SchemaNode representing the object
-     */
-    private static ISchemaNode processObject(Class<?> clz, ISchemaNode parent) {
+    @Override
+    public ISchemaNode processObject(Class<?> clz, ISchemaNode parent) {
         // Root Node
         if (clz == null) {
             return new SchemaNode(null, parent);
@@ -118,29 +105,15 @@ public class SchemaOperator {
         }
     }
 
-    private static ArraySchemaNode getArraySchemaNode(
-            Class<?> clz, Class<?> boxClz, ISchemaNode parent) {
+    private ArraySchemaNode getArraySchemaNode(Class<?> clz, Class<?> boxClz, ISchemaNode parent) {
         ISchemaNode schemaNode = processObject(boxClz, null);
         ArraySchemaNode arraySchemaNode = new ArraySchemaNode(clz, schemaNode, parent);
         schemaNode.setParent(arraySchemaNode);
         return arraySchemaNode;
     }
 
-    /**
-     * Evaluate a schema JSON to a {@link SchemaValue} by using @{@link SchemaNode} and {@link SchemaPath}
-     *
-     * @param schema the schema node
-     * @param path   the schema path
-     * @param json   the JSON string
-     * @return
-     */
-    public static ISchemaValue evaluateValue(
-            ISchemaNode schema, ISchemaPath path, JSONFactory factory, String json) {
-        JSONPathContext ctx = factory.createPathContext(json);
-        return evaluateValue(schema, path, ctx, null);
-    }
-
-    private static ISchemaValue evaluateValue(
+    @Override
+    public ISchemaValue evaluateValue(
             ISchemaNode schema, ISchemaPath path, JSONPathContext ctx, ISchemaValue parent) {
         if (!schemaMatch(schema, path)) {
             throw new IllegalArgumentException("Schema and path do not match");
@@ -230,41 +203,8 @@ public class SchemaOperator {
         throw new UnsupportedOperationException("Unsupported schema type");
     }
 
-    /**
-     * Evaluate a schema JSON to a Java Object by using @{@link SchemaNode} and {@link SchemaPath}
-     *
-     * @param schema
-     * @param path
-     * @param json
-     * @param clazz
-     * @param <T>
-     * @return
-     */
-    public static <T> T evaluateObject(
-            ISchemaNode schema,
-            ISchemaPath path,
-            JSONFactory factory,
-            String json,
-            Class<T> clazz) {
-        try {
-            JSONPathContext ctx = factory.createPathContext(json);
-            return evaluateObject(schema, path, ctx, clazz);
-        } catch (Exception e) {
-            throw new RuntimeException("Error evaluating object", e);
-        }
-    }
-
-    /**
-     * Processes the schema to generate a Java object.
-     *
-     * @param schema The schema definition.
-     * @param path   The path to the JSON data.
-     * @param ctx    The JSONPath context for evaluating JSON data.
-     * @param clazz  The target class type to instantiate.
-     * @param <T>    The generic type of the target object.
-     * @return The constructed Java object.
-     */
-    private static <T> T evaluateObject(
+    @Override
+    public <T> T evaluateObject(
             ISchemaNode schema, ISchemaPath path, JSONPathContext ctx, Class<T> clazz)
             throws NoSuchMethodException,
                     InvocationTargetException,
@@ -415,14 +355,8 @@ public class SchemaOperator {
         throw new UnsupportedOperationException("Unsupported schema type");
     }
 
-    /**
-     * verify the {@link SchemaPath} is match to schema {@link SchemaNode}
-     *
-     * @param schema
-     * @param path
-     * @return
-     */
-    public static boolean schemaMatch(ISchemaNode schema, ISchemaPath path) {
+    @Override
+    public boolean schemaMatch(ISchemaNode schema, ISchemaPath path) {
         // 1. check if the array schema and array path are the same.
         if (schema instanceof ArraySchemaNode) {
             if (!(path instanceof ArraySchemaPath)) {

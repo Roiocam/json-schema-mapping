@@ -6,11 +6,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.google.auto.service.AutoService;
 import io.github.roiocam.jsm.api.ISchemaNode;
 import io.github.roiocam.jsm.api.ISchemaPath;
 import io.github.roiocam.jsm.api.ISchemaValue;
 import io.github.roiocam.jsm.facade.JSONNode;
-import io.github.roiocam.jsm.facade.JSONTools;
 import io.github.roiocam.jsm.schema.SchemaTypeMetadata;
 import io.github.roiocam.jsm.schema.array.ArraySchemaNode;
 import io.github.roiocam.jsm.schema.array.ArraySchemaPath;
@@ -22,34 +22,22 @@ import io.github.roiocam.jsm.schema.value.SchemaNode;
 import io.github.roiocam.jsm.schema.value.SchemaPath;
 import io.github.roiocam.jsm.schema.value.SchemaValue;
 
-/**
- * Parses a JSON structure into the all kind of Schema Object
- */
-public class SchemaParser {
+@AutoService(ISchemaParser.class)
+public class DefaultSchemaParser implements ISchemaParser {
+    private static final DefaultSchemaParser INSTANCE = new DefaultSchemaParser();
 
-    /**
-     * Parses a JSON structure into a {@link SchemaNode}.
-     *
-     * @param json The JSON string representing the schema.
-     * @return The root schema.SchemaNode representing the schema structure.
-     */
-    public static ISchemaNode parseNode(JSONTools tools, String json) {
-        return parseNode(tools, json, null);
+    static {
+        SchemaParser.registerParser(INSTANCE);
     }
 
-    /**
-     * Parses a JSON structure into a {@link SchemaNode}.
-     *
-     * @param json The JSON string representing the schema.
-     * @return The root schema.SchemaNode representing the schema structure.
-     */
-    public static ISchemaNode parseNode(JSONTools tools, String json, Class<?> valueType) {
-        JSONNode rootNode = tools.readTree(json);
-        return parseSchemaNode(rootNode, null, valueType);
+    @Override
+    public int getPriority() {
+        return Integer.MIN_VALUE;
     }
 
-    private static ISchemaNode parseSchemaNode(
-            JSONNode node, ISchemaNode parent, Class<?> valueType) {
+    @Override
+    public ISchemaNode parseSchemaNode(JSONNode node, ISchemaNode parent, Class<?> valueType) {
+
         if (node.isTextual()) {
             // Leaf node: resolve type
             String value = node.asText();
@@ -100,18 +88,8 @@ public class SchemaParser {
         throw new IllegalArgumentException("Unsupported JSON structure: " + node);
     }
 
-    /**
-     * Parses a JSON structure into a {@link SchemaPath}.
-     *
-     * @param json The JSON string representing the schema.
-     * @return The root schema.SchemaNode representing the schema structure.
-     */
-    public static ISchemaPath parsePath(JSONTools tools, String json) {
-        JSONNode rootNode = tools.readTree(json);
-        return parseSchemaPath(rootNode, null);
-    }
-
-    private static ISchemaPath parseSchemaPath(JSONNode node, ISchemaPath parent) {
+    @Override
+    public ISchemaPath parseSchemaPath(JSONNode node, ISchemaPath parent) {
         if (node.isTextual()) {
             // Leaf node: resolve type
             String value = node.asText();
@@ -149,18 +127,8 @@ public class SchemaParser {
         throw new IllegalArgumentException("Unsupported JSON structure: " + node);
     }
 
-    /**
-     * Parses a JSON structure into a {@link SchemaValue}.
-     *
-     * @param json The JSON string representing the schema.
-     * @return The root schema.SchemaNode representing the schema structure.
-     */
-    public static ISchemaValue parseValue(JSONTools tools, String json) {
-        JSONNode rootNode = tools.readTree(json);
-        return parseSchemaValue(rootNode, null);
-    }
-
-    private static ISchemaValue parseSchemaValue(JSONNode node, ISchemaValue parent) {
+    @Override
+    public ISchemaValue parseSchemaValue(JSONNode node, ISchemaValue parent) {
         if (node.isTextual()) {
             // Leaf node: resolve type
             String value = node.asText();
@@ -196,81 +164,4 @@ public class SchemaParser {
 
         throw new IllegalArgumentException("Unsupported JSON structure: " + node);
     }
-
-    //    /**
-    //     * Parses a flatten key into a SchemaNode.
-    //     * @param flattenKey
-    //     * @return
-    //     */
-    //    public static SchemaNode parseFlattenKey(Map<String, String> flattenKey) {
-    //        return parseFlattenKey(flattenKey, null);
-    //    }
-    //
-    //    /**
-    //     * Parses a flatten key into a SchemaNode.
-    //     * @param flattenKey
-    //     * @param valueType
-    //     * @return
-    //     */
-    //    public static SchemaNode parseFlattenKey(Map<String, String> flattenKey, Class<?>
-    // valueType) {
-    //        return parseFlattenSchema(
-    //                flattenKey,
-    //                (v, p) -> {
-    //                    if (v == null) {
-    //                        return new SchemaNode(valueType, p);
-    //                    } else {
-    //                        SchemaTypeMetadata metadata = SchemaTypeMetadata.fromString(v);
-    //                        return new SchemaNode(metadata.getClazz(), p);
-    //                    }
-    //                });
-    //    }
-    //
-    //    /**
-    //     * Parses a flatten key mapping into a SchemaPath.
-    //     * @param flattenMapping
-    //     * @return
-    //     */
-    //    public static SchemaPath parseFlattenPath(Map<String, String> flattenMapping) {
-    //        return parseFlattenSchema(flattenMapping, SchemaPath::new);
-    //    }
-
-    //    /**
-    //     * Parse flatten key into a pattern in a loop.
-    //     * @param flattenMapping
-    //     * @param constructor
-    //     * @return
-    //     * @param <T>
-    //     * @param <R>
-    //     */
-    //    private static <T extends Schema, R> T parseFlattenSchema(
-    //            Map<String, R> flattenMapping, BiFunction<R, T, T> constructor) {
-    //
-    //        T root = constructor.apply(null, null);
-    //
-    //        for (Map.Entry<String, R> entry : flattenMapping.entrySet()) {
-    //            String key = entry.getKey();
-    //            String[] keys = key.split("\\.");
-    //
-    //            T current = root;
-    //            for (int i = 0; i < keys.length; i++) {
-    //                String part = keys[i];
-    //
-    //                // If this is the last part, add the final SchemaNode with the type
-    //                if (i == keys.length - 1) {
-    //                    current.addChild(part, constructor.apply(entry.getValue(), current));
-    //                } else {
-    //                    // Navigate or create intermediate nodes
-    //                    final T finalCurrent = current;
-    //                    Map<String, Schema<?,?>> children = current.getChildren();;
-    //                    current =
-    //                            (T)
-    //                                    children.computeIfAbsent(
-    //                                            part, k -> constructor.apply(null, finalCurrent));
-    //                }
-    //            }
-    //        }
-    //
-    //        return root;
-    //    }
 }

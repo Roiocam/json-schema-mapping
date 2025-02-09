@@ -21,6 +21,10 @@
             <groupId>io.github.roiocam</groupId>
             <artifactId>json-facade</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.google.auto.service</groupId>
+            <artifactId>auto-service</artifactId>
+        </dependency>
         
         <dependency>
             <groupId>io.github.roiocam</groupId>

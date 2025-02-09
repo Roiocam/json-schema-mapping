@@ -17,6 +17,9 @@ import com.jayway.jsonpath.spi.json.JsonProvider;
 import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
 import com.jayway.jsonpath.spi.mapper.MappingProvider;
 import io.github.roiocam.jsm.api.ISchema;
+import io.github.roiocam.jsm.api.ISchemaNode;
+import io.github.roiocam.jsm.api.ISchemaPath;
+import io.github.roiocam.jsm.api.ISchemaValue;
 import io.github.roiocam.jsm.facade.JSONFactories;
 import io.github.roiocam.jsm.facade.JSONFactory;
 import io.github.roiocam.jsm.facade.JSONPathContext;
@@ -24,6 +27,8 @@ import io.github.roiocam.jsm.facade.JSONTools;
 
 @AutoService(JSONFactory.class)
 public class JacksonFactory implements JSONFactory, Comparable<JSONFactory> {
+
+    private JacksonTools tools;
 
     static {
         JSONFactories.register(new JacksonFactory());
@@ -52,13 +57,23 @@ public class JacksonFactory implements JSONFactory, Comparable<JSONFactory> {
 
     @Override
     public JSONTools create() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        objectMapper.configure(SerializationFeature.WRITE_NULL_MAP_VALUES, false);
-        SimpleModule module = new SimpleModule();
-        module.addSerializer(ISchema.class, new SchemaSerializer());
-        objectMapper.registerModule(module);
-        return new JacksonTools(objectMapper);
+        if (tools == null) {
+            synchronized (this) {
+                if (tools == null) {
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+                    objectMapper.configure(SerializationFeature.WRITE_NULL_MAP_VALUES, false);
+                    tools = new JacksonTools(objectMapper);
+                    SimpleModule module = new SimpleModule();
+                    module.addSerializer(ISchema.class, new SchemaSerializer());
+                    module.addDeserializer(ISchemaNode.class, new SchemaNodeDeserializer(tools));
+                    module.addDeserializer(ISchemaPath.class, new SchemaPathDeserializer(tools));
+                    module.addDeserializer(ISchemaValue.class, new SchemaValueDeserializer(tools));
+                    objectMapper.registerModule(module);
+                }
+            }
+        }
+        return tools;
     }
 
     @Override

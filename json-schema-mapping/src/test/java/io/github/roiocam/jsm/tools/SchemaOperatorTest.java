@@ -43,7 +43,7 @@ abstract class SchemaOperatorTest {
                           "token" : "$.token"
                         }
                         """;
-        ISchemaPath schemaPath = SchemaParser.parsePath(getFactory().create(), schemaPathJson);
+        ISchemaPath schemaPath = getFactory().create().readValue(schemaPathJson, ISchemaPath.class);
         Assertions.assertNotNull(schemaPath);
 
         // example json
@@ -126,7 +126,7 @@ abstract class SchemaOperatorTest {
                             "byteValue": "$.config.byteValue"
                         }
                         """;
-        ISchemaPath schemaPath = SchemaParser.parsePath(getFactory().create(), schemaPathJson);
+        ISchemaPath schemaPath = getFactory().create().readValue(schemaPathJson, ISchemaPath.class);
         Assertions.assertNotNull(schemaPath);
         Assertions.assertEquals(
                 getFactory().create().writeTree(getFactory().create().readTree(schemaPathJson)),
@@ -276,7 +276,7 @@ abstract class SchemaOperatorTest {
                             "byteValue": "$.config.byteValue"
                         }
                         """;
-        ISchemaPath schemaPath = SchemaParser.parsePath(getFactory().create(), schemaPathJson);
+        ISchemaPath schemaPath = getFactory().create().readValue(schemaPathJson, ISchemaPath.class);
         Assertions.assertNotNull(schemaPath);
         Assertions.assertEquals(
                 getFactory().create().writeTree(getFactory().create().readTree(schemaPathJson)),
@@ -384,7 +384,7 @@ abstract class SchemaOperatorTest {
                             "byteValue": "$.config.byteValue"
                         }
                         """;
-        ISchemaPath schemaPath = SchemaParser.parsePath(getFactory().create(), schemaPathJson);
+        ISchemaPath schemaPath = getFactory().create().readValue(schemaPathJson, ISchemaPath.class);
         Assertions.assertNotNull(schemaPath);
         Assertions.assertEquals(
                 getFactory().create().writeTree(getFactory().create().readTree(schemaPathJson)),
@@ -496,7 +496,7 @@ abstract class SchemaOperatorTest {
                             "byteValue": "$.config.byteValue"
                         }
                         """;
-        ISchemaPath schemaPath = SchemaParser.parsePath(getFactory().create(), schemaPathJson);
+        ISchemaPath schemaPath = getFactory().create().readValue(schemaPathJson, ISchemaPath.class);
         Assertions.assertNotNull(schemaPath);
         Assertions.assertEquals(
                 getFactory().create().writeTree(getFactory().create().readTree(schemaPathJson)),
