@@ -14,6 +14,10 @@ public class JacksonTools implements JSONTools {
         this.objectMapper = objectMapper;
     }
 
+    public ObjectMapper getObjectMapper() {
+        return objectMapper;
+    }
+
     @Override
     public JSONNode readTree(String json) {
         try {
