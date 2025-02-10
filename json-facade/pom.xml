@@ -6,7 +6,7 @@
     <parent>
         <groupId>io.github.roiocam</groupId>
         <artifactId>jsm-parent</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.0.1</version>
     </parent>
     
     <artifactId>json-facade</artifactId>
