@@ -6,7 +6,7 @@
     <parent>
         <groupId>io.github.roiocam</groupId>
         <artifactId>facades</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.0.2</version>
     </parent>
     
     <artifactId>json-facade-fastjson</artifactId>
